@@ -1,0 +1,3 @@
+[submodule "catkin_ws/src/rapicam_node"]
+	path = catkin_ws/src/rapicam_node
+	url = https://github.com/UbiquityRobotics/raspicam_node.git
