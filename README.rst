@@ -30,7 +30,7 @@ Clone the repo
 
 
 ``raspicam`` node is built for raspberry only. It won't work for a PC.
-If building on PC, install dependencies for raspicam node (as described in raspicam's README):
+If building on Raspberry Pi, install dependencies for raspicam node (as described in raspicam's README):
 
 create a file ``/etc/ros/rosdep/sources.list.d/30-ubiquity.list`` and add to it:
 
