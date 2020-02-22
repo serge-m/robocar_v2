@@ -22,7 +22,7 @@
     <param name="exposure_mode" value="sport"/>
     <param name="shutter_speed" value="0"/>
 
-    <param name="hFlip" value="true">
-    <param name="vFlip" value="true">
+    <param name="hFlip" value="true"/>
+    <param name="vFlip" value="true"/>
   </node>
 </launch>
