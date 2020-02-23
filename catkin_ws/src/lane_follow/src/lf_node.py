@@ -9,6 +9,7 @@ import numpy as np
 import cv2
 import roslib
 import rospy
+import click
 
 
 from geometry_msgs.msg import Vector3Stamped, Vector3
@@ -45,9 +46,11 @@ class ImageSubPubNode:
         print("ImageSubPubNode shut down")
 
 
-def main(args):
+@click.command()
+@click.option('--camera-params', default=None, help='Path to yaml file with camera parameters')
+def main(camera_params):
     rospy.init_node('lane_follow', anonymous=True)
-    lane_follower = LaneFollower()
+    lane_follower = LaneFollower(camera_params)
     node = ImageSubPubNode(processor=lane_follower)
     
     try:
@@ -57,4 +60,4 @@ def main(args):
         print("Shutting down ROS Image feature detector module")
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()

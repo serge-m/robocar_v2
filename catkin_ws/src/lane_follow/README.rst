@@ -5,8 +5,15 @@ Module for lane following node.
 The node is implemented using python3 and opencv. 
 
 Refer to wiki page `Running-ROS-with-python3 <https://github.com/serge-m/robocar_v2/wiki/Running-ROS-with-python3>`_ 
-to learn how to run it.
+to learn how to prepare the environment.
 
+
+How to run
+---------------------------------------------
+
+.. code-block::
+
+    rosrun lane_follow lf_node.py --camera-params $ROBOCAR_BASE/catkin_ws/src/robocar_config/camera_calibration.yaml
 
 
 Development
