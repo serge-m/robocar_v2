@@ -3,8 +3,11 @@ robocar_v2
 ===============================
 
 Self driving robo car. Target functionality:
+
 * lane following (in progress)
+
 * obstacles avoiding (planned)
+
 * road signs recognition (planned)
 
 
@@ -49,12 +52,13 @@ Then run
 
 Preparation for raspicam node done.
 
-Building the workspace:
+To build all the nodes one has to run ``catkin_make install`` inside ``catkin_ws`` directory. 
+On the Raspberry the simulator may not be installed therefore we have to exclude ``robocar_description`` from the build:
 
-::
+.. code-block::
 
     cd ~/robocar_v2/catkin_ws
-    catkin_make
+    catkin_make -DCATKIN_BLACKLIST_PACKAGES="robocar_description" install
 
 
 Running camera node and viewer
