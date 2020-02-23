@@ -13,7 +13,8 @@ How to run
 
 .. code-block::
 
-    rosrun lane_follow lf_node.py --camera-params $ROBOCAR_BASE/catkin_ws/src/robocar_config/camera_calibration.yaml
+    roslaunch lane_follow lf_node_default.launch
+
 
 
 Development

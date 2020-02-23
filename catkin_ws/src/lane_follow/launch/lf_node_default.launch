@@ -1,0 +1,7 @@
+<launch>
+  <arg name="camera_params" default="$(find robocar_config)/camera_calibration.yaml"/>
+
+  <node type="lf_node.py" pkg="lane_follow" name="lf_node" output="screen">
+      <param name="camera_params" value="$(arg camera_params)"/>
+  </node>
+</launch>
