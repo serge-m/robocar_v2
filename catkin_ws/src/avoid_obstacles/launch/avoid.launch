@@ -1,0 +1,8 @@
+<launch>
+  
+  <include file="$(find robocar_description)/launch/diffdrive.launch">
+  </include>
+
+  <node type="obstacle_detection.py" pkg="avoid_obstacles" name="obstacle_detection" output="screen">
+  </node>
+</launch>
