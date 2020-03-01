@@ -22,12 +22,13 @@ def _load_camera_params(path):
     return result
 
 class LaneFollower:
-    def __init__(self, file_camera_params: str=None):
+    def __init__(self, file_camera_params: str=None, resize_if_needed=False):
         self.camera_params = _load_camera_params(file_camera_params) if file_camera_params is not None else None
-           
+        self.resize_if_needed = resize_if_needed
+
     def __call__(self, image: np.ndarray, debug_output: Optional[Dict[str, object]]=None) -> np.ndarray:
         if self.camera_params is not None:
-            image_undist = undistort(image, self.camera_params)
+            image_undist = undistort(image, self.camera_params, self.resize_if_needed)
         else:
             image_undist = image
 
@@ -35,12 +36,17 @@ class LaneFollower:
             debug_output['vis'] = image_undist
         return image.ravel()[:3]
 
-def undistort(image: np.ndarray, camera_params: Dict) -> np.ndarray:
-    h_w_actual = (image.shape[0], image.shape[1])
-    h_w_expected = (camera_params['image_height'], camera_params['image_width'])
-    if h_w_actual != h_w_expected:
-        raise RuntimeError("Camera calibration is set but the size of input doesn't match. "
-                        "expected: {}, actual: {}".format(h_w_expected, h_w_actual))
+def undistort(image: np.ndarray, camera_params: Dict, resize_if_needed: bool) -> np.ndarray:
+    w_h_actual = (image.shape[1], image.shape[0])
+    w_h_expected = (camera_params['image_width'], camera_params['image_height'])
+    
+    if w_h_actual != w_h_expected:
+        if resize_if_needed:
+            image = cv2.resize(image, w_h_expected, interpolation=cv2.INTER_LINEAR)
+        else:
+            raise RuntimeError("Camera calibration is set but the size of input doesn't match. "
+                        "expected: {}, actual: {}".format(w_h_expected, w_h_actual))
+
     return cv2.undistort(
         image, camera_params['camera_matrix'], camera_params['distortion_coefficients'], 
         newCameraMatrix=camera_params['new_camera_matrix']

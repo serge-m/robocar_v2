@@ -49,7 +49,7 @@ def main(args):
     rospy.init_node('lane_follow', anonymous=True)
     camera_params = rospy.get_param('~camera_params')
     
-    lane_follower = LaneFollower(camera_params)
+    lane_follower = LaneFollower(camera_params, resize_if_needed=True)
     node = ImageSubPubNode(processor=lane_follower)
     
     try:
