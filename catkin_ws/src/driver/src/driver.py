@@ -14,16 +14,17 @@ from ackermann_msgs.msg import AckermannDrive
 from pwm_radio_arduino.msg import steering_tfm
 
 def talker():
-    pub = rospy.Publisher("pwm_radio_arduino/driver_ackermann", AckermannDrive, queue_size=1)
-    pub_tfm = rospy.Publisher("pwm_radio_arduino/steering_tfm", steering_tfm, queue_size=1)
+    pub = rospy.Publisher("pwm_radio_arduino/driver_ackermann", AckermannDrive, queue_size=1, latch=False)
+    pub_tfm = rospy.Publisher("pwm_radio_arduino/steering_tfm", steering_tfm, queue_size=1, latch=False)
     rospy.init_node('driver', anonymous=True)
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(5) # 10hz
     while not rospy.is_shutdown():
-        tfm = steering_tfm(-1, 0, 1, 1000, 1400, 1800, -1, 0, 1, 1000, 1400, 1800)
-        pub_tfm.publish(tfm)
-        for angle in np.arange(-1, 1, 0.1):
-            msg = AckermannDrive(steering_angle=angle)
+        for angle in np.hstack([np.arange(-1, 1, 0.1), np.arange(1, -1, -0.1)]):
+            msg = AckermannDrive(speed=0, steering_angle=angle)
             pub.publish(msg)
+            tfm = steering_tfm(-1, 0, 1, 1200, 1400, 1600, -1, 0, 1, 1300, 1400, 1500)
+            pub_tfm.publish(tfm)    
+            print("1")    
             rate.sleep()
 
 if __name__ == '__main__':
