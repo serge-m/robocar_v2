@@ -23,7 +23,7 @@ def start_thread_pub_tfm_params():
 def pub_tfm_params():
     pub_tfm = rospy.Publisher("pwm_radio_arduino/steering_tfm", steering_tfm, queue_size=1, latch=False)
     while not rospy.is_shutdown():
-        tfm = steering_tfm(-1, 0, 1, 90-30, 90, 90+30, -1, 0, 1, 90-10, 90, 90+10)
+        tfm = steering_tfm(-1, 0, 1, 90-30, 90, 90+30, -1, 0, 1, 90-15, 90, 90+15)
         pub_tfm.publish(tfm)  
         rospy.loginfo("pub_tfm")
         time.sleep(1) 
@@ -32,8 +32,8 @@ def talker():
     pub = rospy.Publisher("pwm_radio_arduino/driver_ackermann", AckermannDrive, queue_size=1, latch=False)
     rate = rospy.Rate(5) # 10hz
     while not rospy.is_shutdown():
-        for angle in np.hstack([np.arange(-1, 1, 0.1), np.arange(1, -1, -0.1)]):
-            msg = AckermannDrive(speed=0, steering_angle=angle)
+        for value in np.hstack([np.arange(-1, 1, 0.1), np.arange(1, -1, -0.1)]):
+            msg = AckermannDrive(speed=value, steering_angle=value)
             pub.publish(msg)
             rospy.loginfo("pub_drive")
             rate.sleep()
