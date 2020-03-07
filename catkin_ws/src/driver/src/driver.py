@@ -23,7 +23,7 @@ def start_thread_pub_tfm_params():
 def pub_tfm_params():
     pub_tfm = rospy.Publisher("pwm_radio_arduino/steering_tfm", steering_tfm, queue_size=1, latch=False)
     while not rospy.is_shutdown():
-        tfm = steering_tfm(-1, 0, 1, 1200, 1400, 1600, -1, 0, 1, 1300, 1400, 1500)
+        tfm = steering_tfm(-1, 0, 1, 90-30, 90, 90+30, -1, 0, 1, 90-10, 90, 90+10)
         pub_tfm.publish(tfm)  
         rospy.loginfo("pub_tfm")
         time.sleep(1) 
