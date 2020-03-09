@@ -58,6 +58,7 @@
     <parent link="base"/>
     <child link="${prefix}_ultra_sonic"/>
     <origin rpy="0 0 0" xyz="${length/2} ${refl*(width/6 + center*(width/3))} ${-height/2+0.01}"/>
+    <!-- <origin rpy="0 0 ${0 + refl*center*1.57075/2}" xyz="${length/2} ${refl*(width/3 + center*(width/6))} ${-height/2+0.01}"/> -->
   </joint>
 
   <link name="${prefix}_ultra_sonic">
@@ -84,32 +85,28 @@
       <visualize>true</visualize>
       <update_rate>40</update_rate>
       <ray>
-        <scan>
-          <horizontal>
-            <samples>3</samples>
-            <resolution>1</resolution>
-            <min_angle>-0.030899</min_angle>
-            <max_angle>0.030899</max_angle>
-          </horizontal>
-        </scan>
-        <range>
-          <min>0.10</min>
-          <max>4.0</max>
-          <resolution>0.1</resolution>
-        </range>
-        <noise>
-          <type>gaussian</type>
-          <!-- Noise parameters based on published spec for Hokuyo laser
-               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
-               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
-               reading. -->
-          <mean>0.0</mean>
-          <stddev>0.01</stddev>
-        </noise>
+         <scan>
+            <horizontal>
+               <samples>10</samples>
+               <resolution>1</resolution> 
+               <min_angle>-0.14835</min_angle>
+               <max_angle>0.14835</max_angle>
+            </horizontal>            
+         </scan>
+         <range>
+            <min>0.02</min>
+            <max>4</max>
+            <resolution>0.3</resolution>
+         </range>       
       </ray>
-      <plugin name="${prefix}_ultra_sonic_controller" filename="libgazebo_ros_laser.so">
+      <plugin name="${prefix}_ultra_sonic_controller" filename="libgazebo_ros_range.so">
         <topicName>/scan/${prefix}_ultra_sonic</topicName>
         <frameName>${prefix}_ultra_sonic</frameName>
+        <gaussianNoise>0.005</gaussianNoise>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>40</updateRate>        
+        <radiation>ULTRASOUND</radiation>
+        <fov>0.2967</fov>
       </plugin>
     </sensor>
   </gazebo>
@@ -209,6 +206,16 @@
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
       <robotNamespace>/</robotNamespace>
+    </plugin>
+    <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>50.0</updateRate>
+      <bodyName>base</bodyName>
+      <topicName>robocar/map</topicName>
+      <gaussianNoise>0.01</gaussianNoise>
+      <frameName>world</frameName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
     </plugin>
   </gazebo>
 
