@@ -19,7 +19,7 @@
   <node name="robocar_controller_spawner" pkg="controller_manager" type="spawner"
     args="robocar"/>
 
-  <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
+  <!-- <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
     <param name="default_topic" value="/robocar/cmd_vel"/>
-  </node>
+  </node> -->
 </launch>
