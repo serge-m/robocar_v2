@@ -1,0 +1,9 @@
+numpy 
+rospkg
+
+
+#######################
+# reading rosbags
+gnupg
+pycrypto
+#######################
