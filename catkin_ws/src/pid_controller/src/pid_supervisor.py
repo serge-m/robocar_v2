@@ -3,17 +3,14 @@ import rospy
 import message_filters
 from std_msgs.msg import Header, Float32 
 from sensor_msgs.msg import LaserScan, Range
-from geometry_msgs.msg import PointStamped, Vector3, Vector3Stamped, Twist
+from geometry_msgs.msg import PointStamped, Point, Vector3, Vector3Stamped, Twist
 from pid_controller import PIDController
 import tf
 import math
+from visualization_msgs.msg import Marker
 
 def at_obstacle(dist):
-    # rospy.loginfo("checking dist %s",dist)
     return dist < 1
-
-def near_obstacle(dist):
-    return dist > 1 and dist < 2.5
 
 def callback(ao_vector, lf_vector, *argv):
     distance_array = []
@@ -22,17 +19,37 @@ def callback(ao_vector, lf_vector, *argv):
     obst_dist = min(distance_array)
     heading_vector = lf_vector.vector
 
-    if near_obstacle(obst_dist):
-        alpha = 0.2
-        heading_vector.x = alpha*lf_vector.vector.x + (1-alpha)*ao_vector.vector.x
-        heading_vector.y = alpha*lf_vector.vector.y + (1-alpha)*ao_vector.vector.y
-        rospy.loginfo("use blended vector %s",heading_vector)
+    # combine two vectors into one with coeff
+    # alpha coeff if sensors are in a circle
+    alpha = 0.6
+    # alpha coeff if sensors are in one direction
+    # alpha = 0.3
+    heading_vector.x = alpha*lf_vector.vector.x + (1-alpha)*ao_vector.vector.x
+    heading_vector.y = alpha*lf_vector.vector.y + (1-alpha)*ao_vector.vector.y
+    
+    # marker for vizualisation in RVIZ
+    marker = Marker()
+    marker.header.frame_id = "base"
+    marker.header.stamp = rospy.Time()
+    marker.ns = "/"
+    marker.id = 0
+    marker.type = Marker.ARROW
+    marker.action = Marker.ADD
+    marker.points.append(Point(0, 0, 0.2))
+    marker.points.append(Point(heading_vector.x, heading_vector.y, 0.2))
+    marker.scale.x = 0.02
+    marker.scale.y = 0.05
+    marker.scale.z = 0.1
+    marker.color.a = 1.0 # Don't forget to set the alpha!
+    marker.color.r = 0.0
+    marker.color.g = 0.0
+    marker.color.b = 1.0
+    vis_pub.publish(marker)
+    
     if at_obstacle(obst_dist):
         heading_vector = ao_vector.vector
         rospy.loginfo("use avoid obstacles vector %s",heading_vector)
-    else:
-        rospy.loginfo("use lane follow vector %s",heading_vector)
-
+    
     vel_msg = Twist()
     # Linear velocity in the x-axis.
     # TODO do someting with velocity
@@ -82,6 +99,8 @@ if __name__ == '__main__':
     pid = PIDController(kp, ki, kd)
     t = tf.TransformListener()
     pub = rospy.Publisher('/robocar/cmd_vel', Twist, queue_size=1)
+    vis_pub = rospy.Publisher('/visualize/blend_vectors', Marker, queue_size=1)
+    
     rate = rospy.Rate(50) # 10hz
     
     control()

@@ -1,13 +1,11 @@
 <launch>
   <arg name="model" default="$(find robocar_description)/urdf/robocar.urdf"/>
-  <!-- <arg name="rvizconfig" default="$(find robocar_description)/rviz/urdf.rviz" /> -->
-
+  
   <include file="$(find robocar_description)/launch/gazebo.launch">
     <arg name="model" value="$(arg model)" />
   </include>
 
-  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" /> -->
-
+  
   <!-- <rosparam command="load"
             file="$(find robocar_description)/config/joints.yaml"
             ns="robocar_joint_state_controller" /> -->

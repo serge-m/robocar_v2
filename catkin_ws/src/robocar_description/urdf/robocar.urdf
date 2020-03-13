@@ -57,8 +57,8 @@
   <joint name="${prefix}_ultra_sonic_joint" type="fixed">
     <parent link="base"/>
     <child link="${prefix}_ultra_sonic"/>
-    <origin rpy="0 0 0" xyz="${length/2} ${refl*(width/6 + center*(width/3))} ${-height/2+0.01}"/>
-    <!-- <origin rpy="0 0 ${0 + refl*center*1.57075/2}" xyz="${length/2} ${refl*(width/3 + center*(width/6))} ${-height/2+0.01}"/> -->
+    <!-- <origin rpy="0 0 0" xyz="${length/2} ${refl*(width/6 + center*(width/3))} ${-height/2+0.01}"/> -->
+    <origin rpy="0 0 ${0.11089*refl + refl*center*(1.57075/4-0.14089)}" xyz="${length/2} ${refl*(width/3 + center*(width/6))} ${-height/2+0.01}"/>
   </joint>
 
   <link name="${prefix}_ultra_sonic">
@@ -89,8 +89,8 @@
             <horizontal>
                <samples>10</samples>
                <resolution>1</resolution> 
-               <min_angle>-0.14835</min_angle>
-               <max_angle>0.14835</max_angle>
+               <min_angle>-0.13089</min_angle>
+               <max_angle>0.13089</max_angle>
             </horizontal>            
          </scan>
          <range>
