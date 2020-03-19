@@ -16,13 +16,8 @@ def odom_callback(data):
     # rospy.loginfo("odometry coordinates (%s, %s) at %s",pos.x, pos.y, data.header.seq) 
     # rospy.loginfo("goal coordinates (%s, %s)",x_goal, y_goal) 
     goal_angle = (math.atan2(y_goal - pos.y, x_goal - pos.x) - orient.z + math.pi)%(2*math.pi) - math.pi
-    # create Vector3 object to goal 
-    heading = Vector3(math.cos(goal_angle), math.sin(goal_angle), 1)
-    # add header and create Vector3Stamped object
-    header = Header()
-    header.stamp = rospy.Time.now()
-    header.frame_id = "base"
-    vector = Vector3Stamped(header, heading)
+    
+    vector = make_vector3_stamped(goal_angle)
     # publish vector for go to goal behavior
     pub.publish(vector)
     x_goal+=0.01
@@ -47,6 +42,16 @@ def odom_callback(data):
     vis_pub.publish(marker)
 
     rate.sleep()    
+
+def make_vector3_stamped(goal_angle ):
+    # create Vector3 object to goal 
+    heading = Vector3(math.cos(goal_angle), math.sin(goal_angle), 1)
+    # add header and create Vector3Stamped object
+    header = Header()
+    header.stamp = rospy.Time.now()
+    header.frame_id = "base"
+    vector = Vector3Stamped(header, heading)
+    return vector
 
 if __name__ == '__main__':
     x_goal, y_goal = 1.0, 0.0

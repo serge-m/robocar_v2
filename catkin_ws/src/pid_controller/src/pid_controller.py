@@ -30,16 +30,12 @@ class PIDController:
         self.kd = kd
         
         
-    def get_heading_angle(self, heading_vector):
-        # Return the heading as an angle in the robot's frame of reference.
-        # heading_vector is Vector3Stamped object
-
-        return math.atan2(heading_vector.y,heading_vector.x)        
+      
     
     def execute(self, heading_vector, dt):
         
         # This is the direction we want to go
-        self.heading_angle = self.get_heading_angle(heading_vector)
+        self.heading_angle = get_heading_angle(heading_vector)
 
         # Calculate simple proportional error
         # The direction is in the robot's frame of reference, so the error is the direction.
@@ -57,3 +53,10 @@ class PIDController:
         w = self.kp*error + self.ki*self.E + self.kd*dE
      
         return w
+
+
+def get_heading_angle(heading_vector):
+    # Return the heading as an angle in the robot's frame of reference.
+    # heading_vector is Vector3Stamped object
+
+    return math.atan2(heading_vector.y,heading_vector.x)  

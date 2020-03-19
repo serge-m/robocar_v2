@@ -8,6 +8,11 @@ import tf
 import math
 from visualization_msgs.msg import Marker
 
+
+def at_obstacle(dist):
+    return dist < 1
+
+
 # callback has *argv for cases if we want to change number of sensors
 def callback(*argv):    
     # activate listener for frame transformation
@@ -28,6 +33,7 @@ def callback(*argv):
         distance_array.append(sensor.range)
         y_array.append(new_point.point.y)   
     min_dist = min(distance_array)
+
     # form a vector away from obstacle perpendicular to x-axis in base frame
     # magnitude is inversely proportional to distance to obstacle normalized by max_range
     # direction is opposite to y-coordinate of obstacle in base frame 
@@ -41,6 +47,7 @@ def callback(*argv):
     ao_vector = Vector3Stamped(header, ao_heading)
     # publish vector for avoiding obstacles and minimal distance to it to topics 
     pub.publish(ao_vector)   
+    at_obstacle_pub.publish(Vector3Stamped(header, Vector3(at_obstacle(min_dist), 0, 0)))
 
     # marker for vizualisation in RVIZ
     marker = Marker()
@@ -82,6 +89,7 @@ if __name__ == '__main__':
     
     pub = rospy.Publisher('heading/avoid_obstacles', Vector3Stamped, queue_size=1)
     vis_pub = rospy.Publisher('/visualize/ao_vectors', Marker, queue_size=1)
+    at_obstacle_pub = rospy.Publisher('/heading/at_obstacle', Vector3Stamped, queue_size=1)
     rate = rospy.Rate(50) 
 
     detect_and_publish()

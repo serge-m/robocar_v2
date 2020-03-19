@@ -1,14 +1,37 @@
 <launch>
   
-  <include file="$(find robocar_description)/launch/diffdrive.launch">
-  </include>
+  <arg name="simulation" default="0" />
+  <arg name="camera" default="1" />
+  <arg name="arduino_port" default="/dev/ttyUSB0" />
+ 
+  <group if="$(arg simulation)">
+    <include file="$(find robocar_description)/launch/diffdrive.launch">
+    </include>  
+  </group>
 
+  <group if="$(arg camera)">
+    <include file="$(find raspicam_node)/launch/camerav2_1280x960_10fps.launch">
+    </include>  
+  </group>
+
+  <group unless="$(arg simulation)">
+    <node name="serial_node" pkg="pwm_radio_arduino" type="rosserial_python2_bridge.py" args="$(arg arduino_port) _baud:=115200" output="screen" />
+
+    <!-- If sensors are no connected. We can generate some fake data. -->
+    <node pkg="rostopic" type="rostopic" name="fake_avoid_obstacles"
+    args="pub -r 5 /heading/avoid_obstacles geometry_msgs/Vector3Stamped '{header: auto, vector: [1.0, -1.0, 0.0]}'" /> 
+    <node pkg="rostopic" type="rostopic" name="fake_at_obstacle"
+    args="pub -r 5 /heading/at_obstacle geometry_msgs/Vector3Stamped '{header: auto, vector: [0.0, 0.0, 0.0]}'" /> 
+    <node pkg="rostopic" type="rostopic" name="fake_gtg"
+    args="pub -r 5 /heading/gtg geometry_msgs/Vector3Stamped '{header: auto, vector: [1.0, -2.0, 0.0]}'" /> 
+  </group>
+  
   <node type="obstacle_detection.py" pkg="avoid_obstacles" name="obstacle_detection" output="screen">
   </node>
 
   <node type="pid_supervisor.py" pkg="pid_controller" name="pid_supervisor" output="screen">
   </node>
-  <!-- TODO replace with lane_follow node -->
+  
   <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen">
   </node>
 
