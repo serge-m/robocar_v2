@@ -61,8 +61,21 @@ On the Raspberry the simulator may not be installed therefore we have to exclude
     catkin_make -DCATKIN_BLACKLIST_PACKAGES="robocar_description" install
 
 
+How to run 
+================================
+
+Note: the project is under development. Things may not work. Be creative.
+
+
+Dependencies
+-----------------------
+
+
+* For mouse_odometry: add currect user to ``input`` group: ``sudo adduser $USER input``, reboot to enable changes
+* .....
+
 Running camera node and viewer
-===============================
+-------------------------------------
 
 ::
 
