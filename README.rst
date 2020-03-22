@@ -1,5 +1,7 @@
+===========================
 robocar_v2
-**************************
+===========================
+
 
 Self driving robo car. Target functionality:
 
@@ -71,7 +73,7 @@ Dependencies
 
 
 * For mouse_odometry: add currect user to ``input`` group: ``sudo adduser $USER input``, reboot to enable changes
-* .....
+* ...
 
 Running camera node and viewer
 -------------------------------------
