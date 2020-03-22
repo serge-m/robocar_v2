@@ -1,5 +1,3 @@
-.. highlight:: rst
-
 ===========================
 robocar_v2
 ===========================
@@ -75,7 +73,7 @@ Dependencies
 
 
 * For mouse_odometry: add currect user to ``input`` group: ``sudo adduser $USER input``, reboot to enable changes
-* .....
+* ...
 
 Running camera node and viewer
 -------------------------------------
