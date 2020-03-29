@@ -63,15 +63,17 @@ def callback(ao_vector, lf_vector, at_obstacle):
     global last_time
     current_time = rospy.Time.now()
     dt = current_time.to_time() - last_time.to_time()
-    vel_msg.angular.z = pid.execute(heading_vector, dt)
-    last_time = rospy.Time.now()
-    # Publishing our vel_msg
-    pub.publish(vel_msg)
-    rospy.logdebug("pub vel_msg {}".format(vel_msg))
     
-    angle = get_heading_angle(heading_vector) / (3.14 / 2) + 0.3 * np.sin(rospy.get_time() * 2 % (2 * 3.14) )  
-    msg = AckermannDrive(speed=v, steering_angle=angle)
-    pub_ackermann.publish(msg)
+    if dt > 0:
+        vel_msg.angular.z = pid.execute(heading_vector, dt)
+        last_time = rospy.Time.now()
+        # Publishing our vel_msg
+        pub.publish(vel_msg)
+        rospy.logdebug("pub vel_msg {}".format(vel_msg))
+        
+        angle = get_heading_angle(heading_vector) / (3.14 / 2) + 0.3 * np.sin(rospy.get_time() * 2 % (2 * 3.14) )  
+        msg = AckermannDrive(speed=v, steering_angle=angle)
+        pub_ackermann.publish(msg)
 
     rate.sleep()               
        
@@ -102,7 +104,12 @@ def start_thread_pub_tfm_params():
 def pub_tfm_params():
     pub_tfm = rospy.Publisher("pwm_radio_arduino/steering_tfm", steering_tfm, queue_size=1, latch=False)
     while not rospy.is_shutdown():
-        tfm = steering_tfm(-1, 0, 1, 90-30, 90, 90+30, -1, 0, 1, 90-1, 90, 90+1)
+        tfm = steering_tfm(
+            -1, 0, 1,           # input range for angle
+            90-30, 90, 90+30,   # output range for angle
+            -1, 0, 1,           # input range for speed
+            90-1, 90, 90+1      # output range for speed
+        )
         pub_tfm.publish(tfm)  
         rospy.logdebug("pub_tfm")
         time.sleep(1) 
