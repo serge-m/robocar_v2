@@ -37,7 +37,7 @@ def read_mouse():
 
 def update_pos(dx, dy):
     dx = dx / 10000.
-    dy = dy / 10000.
+    dy = -dy / 10000.
     dtheta = math.atan2(dy, dx)
     pos['dx'] = dx
     pos['dy'] = dy
