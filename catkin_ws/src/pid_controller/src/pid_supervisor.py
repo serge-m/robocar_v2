@@ -15,18 +15,58 @@ import numpy as np
 import time
 
 
-def callback(ao_vector, lf_vector, at_obstacle):
+def callback(ao_vector, gtg_vector, at_obstacle):
 
-    heading_vector = lf_vector.vector
+    heading_vector = gtg_vector.vector
 
     # combine two vectors into one with coeff
     # alpha coeff if sensors are in a circle
     alpha = 0.6
     # alpha coeff if sensors are in one direction
     # alpha = 0.3
-    heading_vector.x = alpha*lf_vector.vector.x + (1-alpha)*ao_vector.vector.x
-    heading_vector.y = alpha*lf_vector.vector.y + (1-alpha)*ao_vector.vector.y
+    heading_vector.x = alpha*gtg_vector.vector.x + (1-alpha)*ao_vector.vector.x
+    heading_vector.y = alpha*gtg_vector.vector.y + (1-alpha)*ao_vector.vector.y
     
+    
+    marker = make_marker_for_rviz(heading_vector)
+    vis_pub.publish(marker)
+    
+    if at_obstacle.vector.x != 0.:  
+        heading_vector = ao_vector.vector
+        rospy.loginfo("use avoid obstacles vector %s",heading_vector)
+    
+
+    global last_time
+    current_time = rospy.Time.now()
+    dt = current_time.to_time() - last_time.to_time()
+    
+    if dt > 0:
+        vel_msg = make_vel_msg(heading_vector, dt)
+        last_time = rospy.Time.now()
+        pub.publish(vel_msg)
+        rospy.logdebug("pub vel_msg {}".format(vel_msg))
+        
+        angle = get_heading_angle(heading_vector) / (3.14 / 2) + 0.3 * np.sin(rospy.get_time() * 2 % (2 * 3.14) )  
+        msg = AckermannDrive(speed=v, steering_angle=angle)
+        pub_ackermann.publish(msg)
+
+    rate.sleep()               
+
+def make_vel_msg(heading_vector, dt):
+    vel_msg = Twist()
+    # Linear velocity in the x-axis.
+    # TODO do someting with velocity
+    vel_msg.linear.x = v
+    vel_msg.linear.y = 0
+    vel_msg.linear.z = 0
+
+    # Angular velocity in the z-axis.
+    vel_msg.angular.x = 0
+    vel_msg.angular.y = 0
+    vel_msg.angular.z = pid.execute(heading_vector, dt)
+    return vel_msg
+
+def make_marker_for_rviz(heading_vector):
     # marker for vizualisation in RVIZ
     marker = Marker()
     marker.header.frame_id = "base"
@@ -44,38 +84,7 @@ def callback(ao_vector, lf_vector, at_obstacle):
     marker.color.r = 0.0
     marker.color.g = 0.0
     marker.color.b = 1.0
-    vis_pub.publish(marker)
-    
-    if at_obstacle.vector.x != 0.:  
-        heading_vector = ao_vector.vector
-        rospy.loginfo("use avoid obstacles vector %s",heading_vector)
-    
-    vel_msg = Twist()
-    # Linear velocity in the x-axis.
-    # TODO do someting with velocity
-    vel_msg.linear.x = v
-    vel_msg.linear.y = 0
-    vel_msg.linear.z = 0
-
-    # Angular velocity in the z-axis.
-    vel_msg.angular.x = 0
-    vel_msg.angular.y = 0
-    global last_time
-    current_time = rospy.Time.now()
-    dt = current_time.to_time() - last_time.to_time()
-    
-    if dt > 0:
-        vel_msg.angular.z = pid.execute(heading_vector, dt)
-        last_time = rospy.Time.now()
-        # Publishing our vel_msg
-        pub.publish(vel_msg)
-        rospy.logdebug("pub vel_msg {}".format(vel_msg))
-        
-        angle = get_heading_angle(heading_vector) / (3.14 / 2) + 0.3 * np.sin(rospy.get_time() * 2 % (2 * 3.14) )  
-        msg = AckermannDrive(speed=v, steering_angle=angle)
-        pub_ackermann.publish(msg)
-
-    rate.sleep()               
+    return marker
        
     
 def control():
@@ -84,11 +93,11 @@ def control():
     # ADD lane_follower vector
     # lf_vector = message_filters.Subscriber("lane_follow/desired_shift", Vector3Stamped)
     # only for simulator use this dummy vector
-    lf_vector = message_filters.Subscriber("heading/gtg", Vector3Stamped)
+    gtg_vector = message_filters.Subscriber("heading/gtg", Vector3Stamped)
     # 4 subscribers for ultrasonic scans
     at_obstacle = message_filters.Subscriber("heading/at_obstacle", Vector3Stamped)
     # combine all in one callback
-    ts = message_filters.ApproximateTimeSynchronizer([ao_vector, lf_vector, at_obstacle], 1, 0.1)
+    ts = message_filters.ApproximateTimeSynchronizer([ao_vector, gtg_vector, at_obstacle], 1, 0.1)
     ts.registerCallback(callback)
     
     rospy.spin()
