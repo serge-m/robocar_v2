@@ -1,4 +1,0 @@
-<launch>
-  <node type="driver.py" pkg="driver" name="driver" output="screen">
-  </node>
-</launch>
