@@ -31,13 +31,13 @@ def read_mouse():
     with open("/dev/input/mice", "rb") as f:
         while not rospy.is_shutdown():
             data = f.read(3);
-            _, dx, dy = struct.unpack("bbb", data)
+            _, dy, dx = struct.unpack("bbb", data)
             update_pos(dx, dy)
             
 
 def update_pos(dx, dy):
-    dx = dx / 1000.
-    dy = dy / 1000.
+    dx = dx / 10000.
+    dy = dy / 10000.
     dtheta = math.atan2(dy, dx)
     pos['dx'] = dx
     pos['dy'] = dy
@@ -56,7 +56,7 @@ def main_mouse_odometery():
         msg = make_odom_message(pos, rospy.Time.now())
         pub.publish(msg)
         rate.sleep()
-        rospy.loginfo_throttle(5, "last published dpose {} {}".format(pos['x'], pos['y']))
+        rospy.loginfo_throttle(1, "last published pos {} {}".format(pos['x'], pos['y']))
         
     rospy.loginfo("main_mouse_odometery exited")
 

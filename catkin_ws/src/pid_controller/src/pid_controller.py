@@ -2,6 +2,25 @@
 import time
 import math
 
+import numpy as np
+def g():
+    while 1:
+        for x in np.linspace(0, 0.5, 20):
+            yield x
+        for i in range(3):
+            yield -0.1
+        for i in range(10):
+            yield 0
+        for x in np.linspace(0, -0.4, 20):
+            yield x
+        for i in range(3):
+            yield 0.1
+        for i in range(10):
+            yield 0
+
+
+it = iter(g())
+
 class PIDController:
     
     def __init__(self, kp, ki, kd):
@@ -54,19 +73,21 @@ class PIDController:
         self.w = self.kp * error + self.ki * self.E + self.kd * dE
 
     def get_w(self):
-        if not need_forward(self.heading_angle):
+        if direction(self.heading_angle) < 0:
             return -self.w / 100
 
         return self.w
     
     def get_speed(self):
-        if not need_forward(self.heading_angle):
+        if direction(self.heading_angle) < 0:
             return -0.3
-        return 0.5
+        return 0.5 
 
-
-def need_forward(heading_angle):
-    return abs(heading_angle) < 0.6 * math.pi
+def direction(heading_angle):
+    if  abs(heading_angle) < 0.6 * math.pi:
+        return 1.
+    else: 
+        return -1.
 
 
 def get_heading_angle(heading_vector):

@@ -18,14 +18,14 @@
   <group unless="$(arg simulation)">
     <param name="/use_sim_time" value="false"/>
 
-    <!-- <node name="serial_node" pkg="pwm_radio_arduino" type="rosserial_python2_bridge.py" args="$(arg arduino_port) _baud:=115200" output="screen" /> -->
+    <node name="serial_node" pkg="pwm_radio_arduino" type="rosserial_python2_bridge.py" args="$(arg arduino_port) _baud:=115200" output="screen" /> 
 
     
     <!-- If sensors are no connected. We can generate some fake data. -->
     <node pkg="rostopic" type="rostopic" name="fake_avoid_obstacles"
-    args="pub -r 5 /heading/avoid_obstacles geometry_msgs/Vector3Stamped '{header: auto, vector: [0.0, 0.0, 0.0]}'" /> 
+    args="pub -r 15 -s /heading/avoid_obstacles geometry_msgs/Vector3Stamped '{header: auto, vector: [0.0, 0.0, 0.0]}'" /> 
     <node pkg="rostopic" type="rostopic" name="fake_at_obstacle"
-    args="pub -r 5 /heading/at_obstacle geometry_msgs/Vector3Stamped '{header: auto, vector: [0.0, 0.0, 0.0]}'" /> 
+    args="pub -r 15 -s /heading/at_obstacle geometry_msgs/Vector3Stamped '{header: auto, vector: [0.0, 0.0, 0.0]}'" /> 
 
     <node name="mouse_odometry" pkg="mouse_odometry" type="mouse_odometry.py" output="screen" />
 

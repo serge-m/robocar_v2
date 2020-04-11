@@ -15,6 +15,33 @@ import numpy as np
 import time
 
 
+class SpeedAdjuster(object):
+    """
+     ESC of the RC-car treats switching the direction of movement as 
+     a power break. We have to do a power break, then send 0, then send new speed
+    """
+
+    def __init__(self):
+        self.speed_to_publish = []
+        self.prev_speed = 0
+
+    def __call__(self, speed):
+        rospy.loginfo("speed {}, prev {}, pub {}".format(speed, self.prev_speed, self.speed_to_publish))
+        if self.speed_to_publish:
+            return self.speed_to_publish.pop()
+        if self.prev_speed * speed >= 0:
+            self.prev_speed = speed
+            return speed
+        
+        self.speed_to_publish = (
+            [0,] * 20  # stop
+            + [0.1 * speed / abs(speed),]*20 # reverse
+        )
+        self.prev_speed = 0
+        return 0
+
+speed_adjuster = SpeedAdjuster()
+
 def callback(ao_vector, gtg_vector, at_obstacle):
 
     heading_vector = gtg_vector.vector
@@ -48,7 +75,7 @@ def callback(ao_vector, gtg_vector, at_obstacle):
         rospy.logdebug("PID supervisor:: pub vel_msg {}".format(vel_msg))
         
         # angle = get_heading_angle(heading_vector) / (0.5 * math.pi) 
-        msg = AckermannDrive(speed=pid.get_speed(), steering_angle=pid.get_w())
+        msg = AckermannDrive(speed=speed_adjuster(pid.get_speed()), steering_angle=pid.get_w() / 50.)
         pub_ackermann.publish(msg)
 
     rate.sleep()               
@@ -97,7 +124,7 @@ def control():
     # 4 subscribers for ultrasonic scans
     at_obstacle = message_filters.Subscriber("heading/at_obstacle", Vector3Stamped)
     # combine all in one callback
-    ts = message_filters.ApproximateTimeSynchronizer([ao_vector, gtg_vector, at_obstacle], 1, 0.1)
+    ts = message_filters.ApproximateTimeSynchronizer([ao_vector, gtg_vector, at_obstacle], 1, 0.8)
     ts.registerCallback(callback)
     
     rospy.spin()
@@ -116,8 +143,8 @@ def pub_tfm_params():
         tfm = steering_tfm(
             -1, 0, 1,           # input range for angle
             90-30, 90, 90+30,   # output range for angle
-            -1, 0, 1,           # input range for speed
-            90-1, 90, 90+1      # output range for speed
+            -0.3, 0, 0.5,           # input range for speed
+            90-15, 90, 90+10      # output range for speed
         )
         pub_tfm.publish(tfm)  
         rospy.logdebug("pub_tfm")
