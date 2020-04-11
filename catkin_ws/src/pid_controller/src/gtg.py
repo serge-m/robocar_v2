@@ -58,9 +58,6 @@ class GoalLoop(GoalBase):
         raise RuntimeError("unsupported direction {}".format(self.direction))
 
 
-
-
-
 def odom_callback(data):
     pos = data.pose.pose.position
     orient = data.pose.pose.orientation

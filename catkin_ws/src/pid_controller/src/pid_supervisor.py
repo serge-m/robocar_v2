@@ -74,8 +74,7 @@ def callback(ao_vector, gtg_vector, at_obstacle):
         pub.publish(vel_msg)
         rospy.logdebug("PID supervisor:: pub vel_msg {}".format(vel_msg))
         
-        # angle = get_heading_angle(heading_vector) / (0.5 * math.pi) 
-        msg = AckermannDrive(speed=speed_adjuster(pid.get_speed()), steering_angle=pid.get_w() / 50.)
+        msg = AckermannDrive(speed=speed_adjuster(pid.get_speed()), steering_angle=pid.get_w() / 10.)
         pub_ackermann.publish(msg)
 
     rate.sleep()               
@@ -144,7 +143,7 @@ def pub_tfm_params():
             -1, 0, 1,           # input range for angle
             90-30, 90, 90+30,   # output range for angle
             -0.3, 0, 0.5,           # input range for speed
-            90-15, 90, 90+10      # output range for speed
+            90-12, 90, 90+10      # output range for speed
         )
         pub_tfm.publish(tfm)  
         rospy.logdebug("pub_tfm")

@@ -2,24 +2,6 @@
 import time
 import math
 
-import numpy as np
-def g():
-    while 1:
-        for x in np.linspace(0, 0.5, 20):
-            yield x
-        for i in range(3):
-            yield -0.1
-        for i in range(10):
-            yield 0
-        for x in np.linspace(0, -0.4, 20):
-            yield x
-        for i in range(3):
-            yield 0.1
-        for i in range(10):
-            yield 0
-
-
-it = iter(g())
 
 class PIDController:
     
