@@ -78,9 +78,21 @@ Dependencies
 Running camera node and viewer
 -------------------------------------
 
+
 ::
 
     roslaunch raspicam_node camerav2_410x308_30fps.launch &
     rosrun rqt_image_view rqt_image_view
 
 
+load camera settings:
+
+:: 
+
+    rosrun dynamic_reconfigure dynparam load /raspicam_node ./camera_settings.yaml
+
+
+
+rosbag recordings:
+
+    rosbag record --split --duration=60s -o odom_recording_ --all
