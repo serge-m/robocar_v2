@@ -27,13 +27,12 @@ def callback(ao_vector, gtg_vector, at_obstacle):
     heading_vector.x = alpha*gtg_vector.vector.x + (1-alpha)*ao_vector.vector.x
     heading_vector.y = alpha*gtg_vector.vector.y + (1-alpha)*ao_vector.vector.y
     
-    
     marker = make_marker_for_rviz(heading_vector)
     vis_pub.publish(marker)
     
     if at_obstacle.vector.x != 0.:  
         heading_vector = ao_vector.vector
-        rospy.loginfo("use avoid obstacles vector %s",heading_vector)
+        rospy.logdebug("use avoid obstacles vector %s",heading_vector)
     
 
     global last_time
@@ -41,29 +40,30 @@ def callback(ao_vector, gtg_vector, at_obstacle):
     dt = current_time.to_time() - last_time.to_time()
     
     if dt > 0:
-        vel_msg = make_vel_msg(heading_vector, dt)
+        pid.execute(heading_vector, dt)
+        
+        vel_msg = make_vel_msg(pid.get_speed(), pid.get_w())
         last_time = rospy.Time.now()
         pub.publish(vel_msg)
-        rospy.logdebug("pub vel_msg {}".format(vel_msg))
+        rospy.logdebug("PID supervisor:: pub vel_msg {}".format(vel_msg))
         
-        angle = get_heading_angle(heading_vector) / (3.14 / 2) + 0.3 * np.sin(rospy.get_time() * 2 % (2 * 3.14) )  
-        msg = AckermannDrive(speed=v, steering_angle=angle)
+        # angle = get_heading_angle(heading_vector) / (0.5 * math.pi) 
+        msg = AckermannDrive(speed=pid.get_speed(), steering_angle=pid.get_w())
         pub_ackermann.publish(msg)
 
     rate.sleep()               
 
-def make_vel_msg(heading_vector, dt):
+def make_vel_msg(speed, angular_z):
     vel_msg = Twist()
     # Linear velocity in the x-axis.
-    # TODO do someting with velocity
-    vel_msg.linear.x = v
+    vel_msg.linear.x = speed
     vel_msg.linear.y = 0
     vel_msg.linear.z = 0
 
     # Angular velocity in the z-axis.
     vel_msg.angular.x = 0
     vel_msg.angular.y = 0
-    vel_msg.angular.z = pid.execute(heading_vector, dt)
+    vel_msg.angular.z = angular_z
     return vel_msg
 
 def make_marker_for_rviz(heading_vector):
@@ -127,14 +127,10 @@ def pub_tfm_params():
 if __name__ == '__main__':
 
     rospy.init_node('pid_supervisor', anonymous=True)
-
     start_thread_pub_tfm_params()
 
-    # TODO maybe get this from ParamsServer
-    kp, ki, kd = 4.0, 0.01, 0.0
-    v = 0.5
     last_time = rospy.Time.now()
-    pid = PIDController(kp, ki, kd)
+    pid = PIDController(kp=4.0, ki=0.01, kd=4.0)
     t = tf.TransformListener()
     pub = rospy.Publisher('/robocar/cmd_vel', Twist, queue_size=1)
     vis_pub = rospy.Publisher('/visualize/blend_vectors', Marker, queue_size=1)

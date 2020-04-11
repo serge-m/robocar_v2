@@ -9,6 +9,8 @@ class PIDController:
         self.heading_angle = 0
         self.set_parameters(kp, ki, kd)
         self.restart()
+
+        self.w = 0
     
     def restart(self):
         """Set the integral and differential errors to zero"""
@@ -49,10 +51,22 @@ class PIDController:
         dE = (error - self.error_1)/dt
         self.error_1 = error #updates the error_1 var
 
-        # Calculate desired w
-        w = self.kp*error + self.ki*self.E + self.kd*dE
-     
-        return w
+        self.w = self.kp * error + self.ki * self.E + self.kd * dE
+
+    def get_w(self):
+        if not need_forward(self.heading_angle):
+            return -self.w / 100
+
+        return self.w
+    
+    def get_speed(self):
+        if not need_forward(self.heading_angle):
+            return -0.3
+        return 0.5
+
+
+def need_forward(heading_angle):
+    return abs(heading_angle) < 0.6 * math.pi
 
 
 def get_heading_angle(heading_vector):

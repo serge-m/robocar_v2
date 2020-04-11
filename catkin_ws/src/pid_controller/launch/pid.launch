@@ -3,6 +3,7 @@
   <arg name="simulation" default="0" />
   <arg name="camera" default="1" />
   <arg name="arduino_port" default="/dev/ttyUSB0" />
+  <arg name="goal_mode" default="forward" />
  
   <group if="$(arg simulation)">
     <include file="$(find robocar_description)/launch/diffdrive.launch">
@@ -15,17 +16,19 @@
   </group>
 
   <group unless="$(arg simulation)">
-    <node name="serial_node" pkg="pwm_radio_arduino" type="rosserial_python2_bridge.py" args="$(arg arduino_port) _baud:=115200" output="screen" />
+    <param name="/use_sim_time" value="false"/>
 
-    <node name="mouse_odometry" pkg="mouse_odometry" type="mouse_odometry.py" args="" output="screen" />
+    <!-- <node name="serial_node" pkg="pwm_radio_arduino" type="rosserial_python2_bridge.py" args="$(arg arduino_port) _baud:=115200" output="screen" /> -->
 
+    
     <!-- If sensors are no connected. We can generate some fake data. -->
     <node pkg="rostopic" type="rostopic" name="fake_avoid_obstacles"
-    args="pub -r 5 /heading/avoid_obstacles geometry_msgs/Vector3Stamped '{header: auto, vector: [1.0, -1.0, 0.0]}'" /> 
+    args="pub -r 5 /heading/avoid_obstacles geometry_msgs/Vector3Stamped '{header: auto, vector: [0.0, 0.0, 0.0]}'" /> 
     <node pkg="rostopic" type="rostopic" name="fake_at_obstacle"
     args="pub -r 5 /heading/at_obstacle geometry_msgs/Vector3Stamped '{header: auto, vector: [0.0, 0.0, 0.0]}'" /> 
-    <node pkg="rostopic" type="rostopic" name="fake_gtg"
-    args="pub -r 5 /heading/gtg geometry_msgs/Vector3Stamped '{header: auto, vector: [1.0, -2.0, 0.0]}'" /> 
+
+    <node name="mouse_odometry" pkg="mouse_odometry" type="mouse_odometry.py" output="screen" />
+
   </group>
   
   <node type="obstacle_detection.py" pkg="avoid_obstacles" name="obstacle_detection" output="screen">
@@ -34,7 +37,8 @@
   <node type="pid_supervisor.py" pkg="pid_controller" name="pid_supervisor" output="screen">
   </node>
   
-  <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen">
+  <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen" >
+    <param name="mode" type="string" value="$(arg goal_mode)" />
   </node>
 
 </launch>

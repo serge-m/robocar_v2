@@ -29,12 +29,15 @@ def start_thread():
 
 def read_mouse():
     with open("/dev/input/mice", "rb") as f:
-        while(True):
+        while not rospy.is_shutdown():
             data = f.read(3);
             _, dx, dy = struct.unpack("bbb", data)
             update_pos(dx, dy)
+            
 
 def update_pos(dx, dy):
+    dx = dx / 1000.
+    dy = dy / 1000.
     dtheta = math.atan2(dy, dx)
     pos['dx'] = dx
     pos['dy'] = dy
@@ -42,15 +45,20 @@ def update_pos(dx, dy):
     pos['theta'] += dtheta
     pos['x'] += dx
     pos['y'] += dy
+    # rospy.loginfo("new dpose {} {}".format(dx, dy))
      
 
 def main_mouse_odometery():
+    rospy.loginfo("main_mouse_odometery started")
     pub = rospy.Publisher("robocar/odometry", Odometry, queue_size=1, latch=False)
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         msg = make_odom_message(pos, rospy.Time.now())
         pub.publish(msg)
         rate.sleep()
+        rospy.loginfo_throttle(5, "last published dpose {} {}".format(pos['x'], pos['y']))
+        
+    rospy.loginfo("main_mouse_odometery exited")
 
 def make_odom_message(pos, ros_now):
     """
