@@ -30,9 +30,44 @@
       <static>true</static>
     </model>
     <road name="my_road">
-      <width>7.34</width>
+      <width>3</width>
       <point>0 0 0</point>
-      <point>100 0 0</point>
+      <point>5 0 0</point>
+      <point>10 3 0</point>
+      <point>10 10 0</point>
+
+    </road>
+
+    <road name="solid">
+      <width>0.02</width>
+      <point>0 0 0.001</point>
+      <point>1 1 0.001</point>
+      <point>2 4 0.001</point>
+      <point>3 9 0.001</point>
+      <point>4 16 0.001</point>
+      <material>
+        <script>
+          <uri>model://lane_marking/materials/scripts</uri>
+          <uri>model://lane_marking/materials/textures</uri>
+          <name>marking_solid</name>
+        </script>
+      </material>
+    </road>
+
+    <road name="dashed">
+      <width>0.02</width>
+      <point>0.0 1.0 0.001</point>
+      <point>1.0 1.5 0.001</point>
+      <point>2.0 4.5 0.001</point>
+      <point>3.0 9.5 0.001</point>
+      <point>4.0 16.5 0.001</point>
+      <material>
+        <script>
+          <uri>model://lane_marking/materials/scripts</uri>
+          <uri>model://lane_marking/materials/textures</uri>
+          <name>marking_dashed</name>
+        </script>
+      </material>
     </road>
   </world>
 </sdf>
