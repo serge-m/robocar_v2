@@ -19,7 +19,7 @@ material marking_dashed
                  texture marking_dashed.png
                  tex_coord_set 0
                  colour_op modulate
-                 scale 1.0 5.0
+                 scale 0.01 0.40
              }
          }
      }

@@ -1,30 +1,61 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
   <model name="lane_solid">
-    <static>false</static>
-    <link name="link">
-      <collision name="collision">
-        <geometry>
-          <box>
-            <size>2 2 .1</size>
-          </box>
-        </geometry>
-      </collision>
+    <pose>0 0 0.01  0 0 0</pose>
+    <static>true</static>
+    <link name="solid">
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>1</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1</iyy>
+          <iyz>0</iyz>
+          <izz>1</izz>
+        </inertia>
+      </inertial>
       <visual name="visual">
-        <cast_shadows>false</cast_shadows>
         <geometry>
-          <box>
-            <size>2 2 .1</size>
-          </box>
-        </geometry>
-        <material>
+          <mesh>
+            <uri>model://lane_marking/track.dae</uri>
+          </mesh>
+	    </geometry>
+	    <material>
           <script>
             <uri>model://lane_marking/materials/scripts</uri>
             <uri>model://lane_marking/materials/textures</uri>
-            <name>marking_dashed</name>
+            <name>marking_solid</name>
           </script>
         </material>
       </visual>
     </link>
+    <link name="dashed">
+          <inertial>
+            <mass>1.0</mass>
+            <inertia>
+              <ixx>1</ixx>
+              <ixy>0</ixy>
+              <ixz>0</ixz>
+              <iyy>1</iyy>
+              <iyz>0</iyz>
+              <izz>1</izz>
+            </inertia>
+          </inertial>
+          <visual name="visual">
+            <geometry>
+              <mesh>
+                <uri>model://lane_marking/track_middle.dae</uri>
+              </mesh>
+    	    </geometry>
+    	    <material>
+              <script>
+                <uri>model://lane_marking/materials/scripts</uri>
+                <uri>model://lane_marking/materials/textures</uri>
+                <name>marking_dashed</name>
+              </script>
+            </material>
+          </visual>
+        </link>
   </model>
 </sdf>
