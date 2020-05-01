@@ -19,9 +19,9 @@
         </geometry>
         <material>
           <script>
-            <uri>model://lane_solid/materials/scripts</uri>
-            <uri>model://lane_solid/materials/textures</uri>
-            <name>lane_solid</name>
+            <uri>model://lane_marking/materials/scripts</uri>
+            <uri>model://lane_marking/materials/textures</uri>
+            <name>marking_dashed</name>
           </script>
         </material>
       </visual>
