@@ -59,6 +59,11 @@ Simulation with a custom map:
 
     roslaunch pid_controller pid.launch simulation:=1 camera:=0  world_name:=$(rospack find robocar_description)/urdf/road.world
 
+    
+![track 8 shape 1](pictures/track8shape1.jpg)
+
+![track 8 shape 2](pictures/track8shape2.jpg)
+
 ### Dependencies
 
 * For mouse_odometry: add currect user to `input` group: `sudo adduser $USER input`, reboot to enable changes
