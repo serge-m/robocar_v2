@@ -4,9 +4,11 @@
   <arg name="camera" default="1" />
   <arg name="arduino_port" default="/dev/ttyUSB0" />
   <arg name="goal_mode" default="forward" />
- 
+  <arg name="world_name" default="$(find robocar_description)/urdf/road_boxes2.world"/>
+
   <group if="$(arg simulation)">
     <include file="$(find robocar_description)/launch/diffdrive.launch">
+        <arg name="world_name"      value="$(arg world_name)"/>
     </include>  
   </group>
 
