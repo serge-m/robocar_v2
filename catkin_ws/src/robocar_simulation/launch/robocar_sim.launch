@@ -3,7 +3,7 @@
   <env name="GAZEBO_MODEL_PATH" value="$(find robocar_ackermann_description)"/>
   <env name="GAZEBO_RESOURCE_PATH" value="$(find robocar_ackermann_description)"/>
   
-  <arg name="world_name" default="$(find husky_gazebo)/worlds/clearpath_playpen.world"/>
+  <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/>
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
