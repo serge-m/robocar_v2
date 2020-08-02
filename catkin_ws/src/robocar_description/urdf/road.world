@@ -17,12 +17,12 @@
 
     <include>
       <uri>model://lane_marking</uri>
-      <pose>0.0 0.05 0.01 0 0 0</pose>
+      <pose>0.0 0.05 0.01 0 0 1.5708</pose>
     </include>
 
     <include>
       <uri>model://lane_marking</uri>
-      <pose>0.0 0.0 0.01 0 0 3.1415</pose>
+      <pose>0.0 0.0 0.01 0 0 -1.5708</pose>
     </include>
   </world>
 </sdf>
