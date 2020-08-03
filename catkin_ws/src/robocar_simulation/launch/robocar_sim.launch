@@ -10,6 +10,7 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="model"/>
+  <arg name="joint_params" default="$(find robocar_simulation)/config/wheel.yaml"/>
   
   <!-- vehicle pose -->
   <arg name="x" default="0"/>
@@ -18,6 +19,8 @@
   <arg name="roll" default="0.0"/>
   <arg name="pitch" default="0.0"/>
   <arg name="yaw" default="3.14"/>
+
+  <arg name="cmd_timeout" default="0.5"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world_name)"/>
@@ -36,10 +39,18 @@
               -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
   
   <node name="controller_spawner" pkg="controller_manager" type="spawner"
-    args="$(find robocar_simulation)/config/wheel.yaml" output="screen"/>
+    args="$(arg joint_params)" output="screen"/>
 
-  <node name="wheel_controller" pkg="robocar_simulation" type="wheel_controller.py"
-    required="true"
-    args="" output="screen"/>
+  <!-- Control the steering, axle, and shock absorber joints. -->
+  <node name="ackermann_controller" pkg="robocar_simulation"
+        type="ackermann_controller.py"
+        output="screen">
+    <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
+    <rosparam file="$(find robocar_simulation)/config/em_3905_ackermann_ctrlr_params.yaml" command="load"/>
+  </node>
+
+  <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="publish_frequency" value="30.0"/>
+  </node>
 
 </launch>

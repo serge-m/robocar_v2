@@ -161,6 +161,7 @@ include_directories(
 # in contrast to setup.py, you can choose the destination
 install(PROGRAMS
   src/wheel_controller.py
+  src/ackermann_controller.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
