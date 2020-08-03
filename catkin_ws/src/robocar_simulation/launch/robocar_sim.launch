@@ -10,7 +10,7 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="model"/>
-
+  
   <!-- vehicle pose -->
   <arg name="x" default="0"/>
   <arg name="y" default="0.5"/>
@@ -34,5 +34,12 @@
         args="-param robot_description -urdf -model robocar_robot
               -x $(arg x) -y $(arg y) -z $(arg z)
               -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
+  
+  <node name="controller_spawner" pkg="controller_manager" type="spawner"
+    args="$(find robocar_simulation)/config/wheel.yaml" output="screen"/>
+
+  <node name="wheel_controller" pkg="robocar_simulation" type="wheel_controller.py"
+    required="true"
+    args="" output="screen"/>
 
 </launch>
