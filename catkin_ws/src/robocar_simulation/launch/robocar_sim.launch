@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <env name="GAZEBO_MODEL_PATH" value="$(find robocar_ackermann_description)"/>
-  <env name="GAZEBO_RESOURCE_PATH" value="$(find robocar_ackermann_description)"/>
+  <env name="GAZEBO_MODEL_PATH" value="$(find robocar_world)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="$(find robocar_world)"/>
   
   <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/>
   <arg name="paused" default="false"/>
