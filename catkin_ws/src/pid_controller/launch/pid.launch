@@ -1,15 +1,20 @@
 <launch>
-  
+  <env name="GAZEBO_MODEL_PATH" value="$(find robocar_description)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="$(find robocar_description)"/>
+
   <arg name="simulation" default="0" />
   <arg name="camera" default="1" />
+  <arg name="camera_params" default="$(find robocar_config)/camera_calibration.yaml"/>
   <arg name="arduino_port" default="/dev/ttyUSB0" />
   <arg name="goal_mode" default="forward" />
-  <arg name="world_name" default="$(find robocar_description)/urdf/road_boxes2.world"/>
+  <!-- <arg name="world_name" default="$(find robocar_description)/urdf/road_boxes2.world"/> -->
+  <!-- <arg name="world_name" default="$(find robocar_description)/urdf/road.world"/> -->
+  <arg name="world_name" default="$(find robocar_description)/urdf/conde.world"/>
 
   <group if="$(arg simulation)">
     <include file="$(find robocar_description)/launch/diffdrive.launch">
         <arg name="world_name"      value="$(arg world_name)"/>
-    </include>  
+    </include> 
   </group>
 
   <group if="$(arg camera)">
