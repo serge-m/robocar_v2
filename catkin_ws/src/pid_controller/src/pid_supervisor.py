@@ -26,7 +26,7 @@ class SpeedAdjuster(object):
         self.prev_speed = 0
 
     def __call__(self, speed):
-        rospy.loginfo("speed {}, prev {}, pub {}".format(speed, self.prev_speed, self.speed_to_publish))
+        # rospy.loginfo("speed {}, prev {}, pub {}".format(speed, self.prev_speed, self.speed_to_publish))
         if self.speed_to_publish:
             return self.speed_to_publish.pop()
         if self.prev_speed * speed >= 0:

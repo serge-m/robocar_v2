@@ -15,6 +15,10 @@
     <include file="$(find robocar_description)/launch/diffdrive.launch">
         <arg name="world_name"      value="$(arg world_name)"/>
     </include> 
+    <!-- node for visualizing camera images -->
+    <node name="image_view" pkg="image_view" type="image_view">
+        <remap from="image" to="camera/rgb/image_raw" />
+    </node>
   </group>
 
   <group if="$(arg camera)">
