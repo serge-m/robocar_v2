@@ -1,0 +1,5 @@
+axle_ctrlr:
+  joint: axle
+  type: effort_controllers/JointPositionController
+  
+    

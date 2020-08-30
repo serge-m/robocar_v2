@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wheels">
+  <xacro:property name='width' value='2.2' />
+  <xacro:property name='length' value='2.4' />
+  <xacro:property name='height' value='1.1' />
+  
+  <xacro:macro name="box_inertial" params="mass length width height">
+  <inertial>
+    <mass value="${mass}" />
+    <inertia ixx="${mass*(height*height+width*width)/12}" ixy="0.0" ixz="0.0" iyy="${mass*(length*length+width*width)/12}" iyz="0.0" izz="${mass*(length*length+height*height)/12}" />    
+  </inertial>
+  </xacro:macro>
+
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_base" type="fixed">
+    <parent link="base_link"/>
+    <child link="base"/>
+  </joint>
+
+  <link name="base">
+    <visual>
+      <geometry>
+        <box size="${length} ${width} ${height}"/>
+      </geometry>
+      <material name="blue"/> 
+      <origin xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertial mass="2" length="${length}" width="${width}" height="${height}"/>
+  </link>
+
+
+  <xacro:macro name="null_inertial">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </xacro:macro>
+
+  <link name="axle_carrier">
+    <xacro:null_inertial/>
+  </link>
+
+  <joint name="axle_suspension" type="fixed">
+    <parent link="base"/>
+    <child link="axle_carrier"/>
+    <origin rpy="0 0 0"/>
+    <axis xyz="1 1 0"/>
+  </joint>
+
+  <joint name="axle" type="continuous">
+    <parent link="axle_carrier"/>
+    <child link="wheel"/>
+    <origin rpy="${pi / 2} 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10" velocity="10"/>
+  </joint>
+
+  <link name="wheel">
+    <visual>
+      <origin xyz="1 1.5 0"/>
+      <geometry>
+        <cylinder radius="0.3" length="0.1"/>
+      </geometry>
+      <material name="tire_mat"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 1.5 0"/>
+      <geometry>
+        <cylinder radius="0.3" length="0.1"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertial mass="0.2" length="0.2" width="0.2" height="0.2"/>
+  </link>
+
+  <transmission name="axle_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="axle">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="axle_act">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <gazebo reference="wheel">
+    <mu1 value="200.0"/>
+    <mu2 value="100.0"/>
+    <kp value="10000000.0" />
+    <kd value="1.0" />
+    <material>Gazebo/Wood</material>
+  </gazebo>
+  
+
+  <gazebo reference="base"> 
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <gazebo reference="base_link">
+    <material>Gazebo/Green</material>
+  </gazebo>
+  
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+  </gazebo>
+
+</robot>

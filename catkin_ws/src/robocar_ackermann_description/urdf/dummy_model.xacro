@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="zaza">
+  <xacro:property name='width' value='2.2' />
+  <xacro:property name='length' value='2.4' />
+  <xacro:property name='height' value='1.1' />
+  
+  <xacro:macro name="box_inertial" params="mass length width height">
+  <inertial>
+    <mass value="${mass}" />
+    <inertia ixx="${mass*(height*height+width*width)/12}" ixy="0.0" ixz="0.0" iyy="${mass*(length*length+width*width)/12}" iyz="0.0" izz="${mass*(length*length+height*height)/12}" />    
+  </inertial>
+  </xacro:macro>
+
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+
+  <link name="base">
+    <visual>
+      <geometry>
+        <box size="${length} ${width} ${height}"/>
+      </geometry>
+      <material name="blue"/> 
+      <origin xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertial mass="2" length="${length}" width="${width}" height="${height}"/>
+  </link>
+
+  <gazebo reference="base"> 
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+</robot>
