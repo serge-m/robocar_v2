@@ -42,9 +42,10 @@ class SpeedAdjuster(object):
 
 speed_adjuster = SpeedAdjuster()
 
-def callback(ao_vector, gtg_vector, at_obstacle):
+def callback(ao_vector, lf_vector, gtg_vector, at_obstacle):
 
-    heading_vector = gtg_vector.vector
+    # heading_vector = gtg_vector.vector
+    heading_vector = lf_vector.vector
 
     # combine two vectors into one with coeff
     # alpha coeff if sensors are in a circle
@@ -117,13 +118,13 @@ def control():
     # 2 subscribers for 2 vectors
     ao_vector = message_filters.Subscriber("heading/avoid_obstacles", Vector3Stamped)
     # ADD lane_follower vector
-    # lf_vector = message_filters.Subscriber("lane_follow/desired_shift", Vector3Stamped)
+    lf_vector = message_filters.Subscriber("lane_follow/desired_shift", Vector3Stamped)
     # only for simulator use this dummy vector
     gtg_vector = message_filters.Subscriber("heading/gtg", Vector3Stamped)
     # 4 subscribers for ultrasonic scans
     at_obstacle = message_filters.Subscriber("heading/at_obstacle", Vector3Stamped)
     # combine all in one callback
-    ts = message_filters.ApproximateTimeSynchronizer([ao_vector, gtg_vector, at_obstacle], 1, 0.8)
+    ts = message_filters.ApproximateTimeSynchronizer([ao_vector, lf_vector, gtg_vector, at_obstacle], 1, 0.8)
     ts.registerCallback(callback)
     
     rospy.spin()
