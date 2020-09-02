@@ -17,7 +17,7 @@
   <arg name="joint_params" default="$(find robocar_simulation)/config/em_3905_joint_ctrlr_params.yaml"/>
   
   <!-- vehicle pose -->
-  <arg name="x" default="-0.5"/>
+  <arg name="x" default="0"/>
   <arg name="y" default="0"/>
   <arg name="z" default="0.5"/>
   <arg name="roll" default="0.0"/>
@@ -50,12 +50,12 @@
     args="$(arg joint_params)" output="screen"/>
 
   <!-- Control the steering, axle, and shock absorber joints. -->
-  <!-- <node name="ackermann_controller" pkg="robocar_simulation"
+  <node name="ackermann_controller" pkg="robocar_simulation"
         type="ackermann_controller.py"
         output="screen">
     <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
     <rosparam file="$(find robocar_simulation)/config/em_3905_ackermann_ctrlr_params.yaml" command="load"/>
-  </node> -->
+  </node>
 
   <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="publish_frequency" value="30.0"/>
@@ -84,8 +84,8 @@
   <node type="pid_supervisor.py" pkg="pid_controller" name="pid_supervisor" output="screen">
   </node>
   
-  <!-- <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen" >
+  <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen" >
     <param name="mode" type="string" value="$(arg goal_mode)" />
-  </node> -->
+  </node>
 
 </launch>
