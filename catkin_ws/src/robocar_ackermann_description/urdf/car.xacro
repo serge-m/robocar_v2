@@ -310,7 +310,89 @@ limitations under the License.
   <xacro:rear_wheel lr_prefix="left" fr_prefix="rear" lr_reflect="1" fr_reflect="-1"/>
   <xacro:rear_wheel lr_prefix="right" fr_prefix="rear" lr_reflect="-1" fr_reflect="-1"/>
 
+  <!-- camera -->
+  <gazebo reference="camera">
+    <sensor type="camera" name="camera1">
+      <update_rate>10.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>2.3</horizontal_fov>
+        <image>
+          <width>1280</width>
+          <height>960</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>100</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>camera</cameraName>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <frameName>camera</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>-0.279653</distortionK1>
+        <distortionK2>0.060243</distortionK2>
+        <distortionK3>0.002379</distortionK3>
+        <distortionT1>-0.000038</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+
+  <!-- CAMERA -->
+  <link name="camera"> 
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6"
+      />
+    </inertial>
+
+    <collision name='camera_collision'>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/> 
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+    </collision>
+
+    <visual name='camera_visual'>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint type="fixed" name="camera_joint">
+    <origin xyz="0.2 0 ${chassis_height}" rpy="0 0.2 0"/>
+    <child link="camera"/>
+    <parent link="base_link"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+  </joint>
+  <!-- CAMERA END -->
+
+
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
+    <!-- publish ground truth into odometry topic -->
+    <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>50.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>robocar/odometry</topicName>
+      <gaussianNoise>0.01</gaussianNoise>
+      <frameName>world</frameName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+    </plugin>
   </gazebo>
 </robot>

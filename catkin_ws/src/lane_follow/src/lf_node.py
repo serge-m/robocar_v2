@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Lane following module
 """
@@ -14,18 +14,18 @@ import rospy
 from geometry_msgs.msg import Vector3Stamped, Vector3
 from sensor_msgs.msg import CompressedImage
 
-from lf.lane_follower import LaneFollower
+from lane_follower import LaneFollower
 from img_messages import compressed_img_message, np_from_compressed_ros_msg
 
-
-def vector3d_msg(vector: np.ndarray) -> Vector3Stamped:
+# (vector: np.ndarray) -> Vector3Stamped
+def vector3d_msg(vector):
     msg = Vector3Stamped()
     msg.header.stamp=rospy.Time.now()
-    msg.vector=Vector3(vector[0], vector[1], vector[2])
+    msg.vector=Vector3(vector[0], vector[1], 0)
     return msg
 
 class ImageSubPubNode:
-    def __init__(self, processor: callable):
+    def __init__(self, processor):
         self.subscriber = rospy.Subscriber("/raspicam_node/image/compressed", CompressedImage, self.callback,  queue_size=1)
         self.publisher_debug = rospy.Publisher("/lane_follow/debug/compressed", CompressedImage, queue_size=1)
         self.publisher_shift = rospy.Publisher("/lane_follow/desired_shift", Vector3Stamped, queue_size=1)
