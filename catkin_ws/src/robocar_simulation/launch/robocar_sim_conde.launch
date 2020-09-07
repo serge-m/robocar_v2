@@ -5,7 +5,8 @@
   
   <!-- <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/> -->
   <!-- <arg name="world_name" default="$(find robocar_world)/worlds/road.world"/> -->
-  <arg name="world_name" default="$(find robocar_world)/worlds/conde.world"/>
+  <!-- <arg name="world_name" default="$(find robocar_world)/worlds/conde.world"/> -->
+  <arg name="world_name" default="$(find robocar_world)/worlds/straight_road.world"/>
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
@@ -62,9 +63,9 @@
   </node>
   
   <!-- node for visualizing camera images -->
-  <node name="image_view" pkg="image_view" type="image_view">
+  <!-- <node name="image_view" pkg="image_view" type="image_view">
       <remap from="image" to="camera/rgb/image_raw" />
-  </node>
+  </node> -->
  
   <node name="republish" pkg="image_transport" type="republish" args="raw in:=/camera/rgb/image_raw compressed out:=/raspicam_node/image" /> 
   
@@ -84,8 +85,8 @@
   <node type="pid_supervisor.py" pkg="pid_controller" name="pid_supervisor" output="screen">
   </node>
   
-  <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen" >
+  <!-- <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen" >
     <param name="mode" type="string" value="$(arg goal_mode)" />
-  </node>
+  </node> -->
 
 </launch>

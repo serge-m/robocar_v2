@@ -43,10 +43,10 @@ class SpeedAdjuster(object):
 speed_adjuster = SpeedAdjuster()
 
 # def callback(ao_vector, lf_vector, gtg_vector, at_obstacle):
-def callback(gtg_vector):
+def callback(lf_vector):
     
-    heading_vector = gtg_vector.vector
-    # heading_vector = lf_vector.vector
+    # heading_vector = gtg_vector.vector
+    heading_vector = lf_vector.vector
     
 
     # combine two vectors into one with coeff
@@ -76,8 +76,14 @@ def callback(gtg_vector):
         last_time = rospy.Time.now()
         # pub.publish(vel_msg)
         # rospy.logdebug("PID supervisor:: pub vel_msg {}".format(vel_msg))
-        
-        msg = AckermannDrive(speed=speed_adjuster(pid.get_speed()), steering_angle=pid.get_w())
+        rospy.loginfo("heading_vector is %s",heading_vector)
+        rospy.loginfo("pid.get_speed() is %s",pid.get_speed())
+        rospy.loginfo("pid.get_w() is %s",pid.get_w())
+        msg = AckermannDrive(speed=speed_adjuster(pid.get_speed()), 
+                            steering_angle=pid.get_w(),
+                            steering_angle_velocity=0.5,
+                            acceleration=1,
+                            jerk=0.01)
         pub_ackermann.publish(msg)
         pub_ackermann_sim.publish(msg)
 
@@ -121,14 +127,14 @@ def control():
     # 2 subscribers for 2 vectors
     # ao_vector = message_filters.Subscriber("heading/avoid_obstacles", Vector3Stamped)
     # ADD lane_follower vector
-    # lf_vector = message_filters.Subscriber("lane_follow/desired_shift", Vector3Stamped)
+    lf_vector = message_filters.Subscriber("lane_follow/desired_shift", Vector3Stamped)
     # only for simulator use this dummy vector
-    gtg_vector = message_filters.Subscriber("heading/gtg", Vector3Stamped)
+    # gtg_vector = message_filters.Subscriber("heading/gtg", Vector3Stamped)
     # 4 subscribers for ultrasonic scans
     # at_obstacle = message_filters.Subscriber("heading/at_obstacle", Vector3Stamped)
     # combine all in one callback
     # ts = message_filters.ApproximateTimeSynchronizer([ao_vector, lf_vector, gtg_vector, at_obstacle], 1, 0.8)
-    ts = message_filters.ApproximateTimeSynchronizer([gtg_vector], 1, 0.8)
+    ts = message_filters.ApproximateTimeSynchronizer([lf_vector], 1, 0.8)
     ts.registerCallback(callback)
     
     rospy.spin()

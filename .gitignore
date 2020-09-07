@@ -144,3 +144,10 @@ experiment*/
 .vscode/
 .idea/
 *.bag
+catkin_ws/src/ackermann_msgs/CHANGELOG.rst
+catkin_ws/src/ackermann_msgs/CMakeLists.txt
+catkin_ws/src/ackermann_msgs/mainpage.dox
+catkin_ws/src/ackermann_msgs/package.xml
+catkin_ws/src/ackermann_msgs/README.rst
+catkin_ws/src/ackermann_msgs/msg/AckermannDrive.msg
+catkin_ws/src/ackermann_msgs/msg/AckermannDriveStamped.msg

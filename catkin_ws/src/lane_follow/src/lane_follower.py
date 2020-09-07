@@ -30,28 +30,36 @@ class LaneFollower:
 
 #    (self, image: np.ndarray, debug_output: Optional[Dict[str, object]]=None) -> np.ndarray 
     def __call__(self, image, debug_output=None):
-        waypoints = [image.ravel()[:2]]
+        waypoints = [[1, 0]]
         if self.camera_params is not None:
              # Undistort image
             image_undist = undistort(image, self.camera_params, self.resize_if_needed)
-            # cv2.imwrite('C:/tmp/img/' + str(rospy.get_time()) + '.jpg', image_undist)
+            
+            
             # Make gradient and color treshold
             treshold = treshold_binary(image_undist)
             # get matrices for perspective transform
-            perspective_M, Minv = get_warp_matrices(image_undist)
+            perspective_M, Minv = get_warp_matrices(image_undist, self.camera_params['camera_matrix'])
             # Warp tresholded image
             warp_img = unwarp(treshold, perspective_M)
+            warp_save = np.dstack((warp_img, warp_img, warp_img)) * 255
+            
             # Calculate polynomials for left and right lanes
             left_fit, right_fit, out_img = fit_polynomial(warp_img)
-            predicted_waypoints = get_waypoints(image.shape, left_fit, right_fit, Minv)
+            predicted_waypoints = get_waypoints(image.shape, left_fit, right_fit, self.camera_params['camera_matrix'])
             if (predicted_waypoints.size > 0): 
                 waypoints = predicted_waypoints
-                rospy.loginfo("waypoints are %s", [1, waypoints[0][1]])
+                # print(waypoints[0])
+                # rospy.loginfo("waypoints are %s", [0.5, -waypoints[0][1]])
+                rospy.loginfo("waypoints are %s", waypoints[0])
+                time = str(rospy.get_time()) + str(waypoints[0])
+                # cv2.imwrite('C:/tmp/img/' + time + '.jpg', image_undist)
+                # cv2.imwrite('C:/tmp/img/warp_' + time + '.jpg', warp_save)
         else:
             image_undist = image
         if debug_output is not None:
             debug_output['vis'] = image_undist
-        return [1, waypoints[0][1]]
+        return waypoints[0]
 
 # (image: np.ndarray, camera_params: Dict, resize_if_needed: bool) -> np.ndarray
 def undistort(image, camera_params, resize_if_needed):
@@ -78,22 +86,27 @@ def get_waypoints(shape, left_fit, right_fit, M):
         right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
     except TypeError:
         # Avoids an error if `left` and `right_fit` are still none or incorrect
-        rospy.loginfo('The function failed to fit a line!')
+        # rospy.loginfo('The function failed to fit a line!')
         left_fitx = 1*ploty**2 + 1*ploty
         right_fitx = 1*ploty**2 + 1*ploty
 
     middle_fitx = (left_fitx + right_fitx) / 2
-
-    center_fitx = (left_fitx + right_fitx) / 2
-    
-    center_array = np.dstack((middle_fitx, ploty))
-    warp_arr = cv2.perspectiveTransform(center_array, M)
-    warp_arr[:, :, 0]-= int(shape[1] / 2)
-    warp_arr = warp_arr[(warp_arr[:,:,0] > 0.) & (warp_arr[:,:,1] > 0.) 
-                        & (warp_arr[:,:,0] < shape[1]) & (warp_arr[:,:,1] < shape[0])]
-    warp_arr[:,[0, 1]] = warp_arr[:,[1, 0]]
-    
-    return warp_arr
+    # print(middle_fitx)
+    center_array = np.column_stack((middle_fitx, np.flip(ploty, 0)))
+    # print(center_array)
+    # substract img.width/2 to find deviation from center line
+    center_array[:, 0]-= int(shape[1] / 2)
+    # print(center_array)
+    # divide by scaling parameters in x and y directions
+    # to find coodrinates in required units and required sign
+    center_array[:, 0]/= -M[0][0]
+    # center_array[:, 0]/= M[0][0]
+    center_array[:, 1]/= M[1][1]
+    # print(center_array)
+    center_array[:,[0, 1]] = center_array[:,[1, 0]]
+    # print(center_array[0])
+   
+    return center_array
 
 # Gradient and color tresholds
 def treshold_binary(image, s_thresh=(200, 255), sx_thresh=(20, 90)):
@@ -122,10 +135,22 @@ def treshold_binary(image, s_thresh=(200, 255), sx_thresh=(20, 90)):
     return combined_binary
 
 # get Matrix and Inverse Matrix for Perspective Transform
-def get_warp_matrices(image):
+def get_warp_matrices(image, M):
+    w = image.shape[1] # 1280
+    h = image.shape[0] # 960
     # get transform points
-    src = np.float32([[0, image.shape[0]-220],[520, 520],[image.shape[1]-485, 520],[image.shape[1], image.shape[0]-260]])
-    dst = np.float32([[300, image.shape[0]],[300, 0],[image.shape[1]-300, 0],[image.shape[1]-300, image.shape[0]]])
+    # TODO points should be dependant on height and angle of camera, not hard-corded
+    src = np.float32([[0, h-150],[555, 520],[w-530, 520],[w, h-150]])
+    # scaling parameters in x and y directions
+    # road width will be equal to one unit length
+    x = M[0][0]
+    y = M[1][1]
+
+    dst = np.float32([[int((w-x)/2), h],
+                    [int((w-x)/2), int((h-y))],
+                    [int((w+x)/2), int((h-y))],
+                    [int((w+x)/2), h]])
+    
     M = cv2.getPerspectiveTransform(src, dst)
     Minv = cv2.getPerspectiveTransform(dst, src)
     return  M, Minv
