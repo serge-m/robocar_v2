@@ -53,13 +53,13 @@ Note: the project is under development. Things may not work. Be creative.
 
 ### Simulation
 
-    roslaunch pid_controller pid.launch simulation:=1 camera:=0
+    # launch the simulation
+    roslaunch robocar_simulation robocar_sim.launch model:=$(rospack find robocar_ackermann_description)/urdf/car.xacro joint_params:=$(rospack find robocar_simulation)/config/em_3905_joint_ctrlr_params.yaml world_name:=$(rospack find robocar_world)/worlds/road.world
 
-Simulation with a custom map:
-
-    roslaunch pid_controller pid.launch simulation:=1 camera:=0  world_name:=$(rospack find robocar_description)/urdf/road.world
-
+    # launch rqt_publisher, then put some messages to the ackermann_cmd topic
+    rosrun rqt_publisher rqt_publisher &
     
+
 ![track 8 shape 1](pictures/track8shape1.jpg)
 
 ![track 8 shape 2](pictures/track8shape2.jpg)
