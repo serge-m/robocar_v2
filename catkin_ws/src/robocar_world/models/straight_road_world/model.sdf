@@ -26,11 +26,11 @@
         </collision>
         <visual name='visual_ground'>
           <cast_shadows>0</cast_shadows>
-	  <pose>0 -0.02 .005 0 0 0</pose>
+	        <pose>0 -0.02 .005 0 0 0</pose>
           <geometry>
             <plane>
               <normal>0 0 1</normal>
-              <size>8.3 8.3</size>
+              <size>33.2 8.3</size>
             </plane>
           </geometry>
           <material>

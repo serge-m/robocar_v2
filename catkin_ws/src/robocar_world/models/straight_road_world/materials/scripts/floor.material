@@ -11,7 +11,7 @@ material Floor/Image
 
       texture_unit
 			{
-				texture road.png
+				texture road2.png
 			}
     }
   }
