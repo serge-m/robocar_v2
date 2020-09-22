@@ -4,7 +4,7 @@
   <env name="GAZEBO_RESOURCE_PATH" value="$(find robocar_world)"/>
   
   <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/>
-  <arg name="paused" default="false"/>
+  <arg name="paused" default="true"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
@@ -15,7 +15,7 @@
   <!-- vehicle pose -->
   <arg name="x" default="0"/>
   <arg name="y" default="0"/>
-  <arg name="z" default="0.5"/>
+  <arg name="z" default="0.095"/>
   <arg name="roll" default="0.0"/>
   <arg name="pitch" default="0.0"/>
   <arg name="yaw" default="0.0"/>
@@ -51,6 +51,10 @@
 
   <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="publish_frequency" value="30.0"/>
+  </node>
+
+  <!-- Publish ackermann_msg for ackermann_controller -->
+  <node type="control_supervisor.py" pkg="pid_controller" name="control_supervisor_node" output="screen">
   </node>
 
 </launch>

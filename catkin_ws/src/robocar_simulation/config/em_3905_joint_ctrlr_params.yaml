@@ -32,28 +32,28 @@ joint_state_ctrlr:
 left_steering_ctrlr:
   joint: left_steering_joint
   type: effort_controllers/JointPositionController
-  pid: {p: 4.0, i: 0.0, d: 1.0}
+  pid: {p: 1.0, i: 0.0, d: 0.5}
 right_steering_ctrlr:
   joint: right_steering_joint
   type: effort_controllers/JointPositionController
-  pid: {p: 4.0, i: 0.0, d: 1.0}
+  pid: {p: 1.0, i: 0.0, d: 0.5}
 
 left_front_axle_ctrlr:
   joint: left_front_axle
   type: effort_controllers/JointVelocityController
-  pid: {p: 1.5, i: 1.0, d: 0.0, i_clamp: 10.0}
+  pid: {p: 0.0, i: 0.0, d: 0.0, i_clamp: 0.0}
 right_front_axle_ctrlr:
   joint: right_front_axle
   type: effort_controllers/JointVelocityController
-  pid: {p: 1.5, i: 1.0, d: 0.0, i_clamp: 10.0}
+  pid: {p: 0.0, i: 0.0, d: 0.0, i_clamp: 0.0}
 left_rear_axle_ctrlr:
   joint: left_rear_axle
   type: effort_controllers/JointVelocityController
-  pid: {p: 1.5, i: 1.0, d: 0.0, i_clamp: 10.0}
+  pid: {p: 1.0, i: 0.0, d: 0.0, i_clamp: 0.0}
 right_rear_axle_ctrlr:
   joint: right_rear_axle
   type: effort_controllers/JointVelocityController
-  pid: {p: 1.5, i: 1.0, d: 0.0, i_clamp: 10.0}
+  pid: {p: 1.0, i: 0.0, d: 0.0, i_clamp: 0.0}
 
 # The proportional gain of each shock absorber controller is
 # 2 * (shock_stroke * shock_spring_constant / wheel_travel). shock_stroke is
