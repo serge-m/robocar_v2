@@ -30,10 +30,11 @@ class WaypointPublisher(object):
         waypoints = self.get_waypoints(form)
         self.publish(waypoints)
         rospy.loginfo('Waypoints published')
+        rospy.loginfo(waypoints)
         
     def quaternion_from_yaw(self):
-        # TODO maybe change later 50 to smth else
-        return tf.transformations.quaternion_from_euler(0., 0., 50)
+        # TODO maybe change later 0 to smth else
+        return tf.transformations.quaternion_from_euler(0., 0., 0)
     
     def get_waypoints(self, form):
         

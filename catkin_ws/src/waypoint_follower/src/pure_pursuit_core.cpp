@@ -44,12 +44,6 @@ void PurePursuit::callbackFromCurrentPose(const nav_msgs::OdometryConstPtr &msg)
   velocity_set_ = true;
 }//processing frequency
 
-// void PurePursuit::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
-// {
-//   current_velocity_ = *msg;
-//   velocity_set_ = true;
-// }
-
 void PurePursuit::callbackFromWayPoints(const robocar_msgs::LaneConstPtr &msg)
 {
   current_waypoints_.setPath(*msg);
@@ -341,8 +335,7 @@ geometry_msgs::TwistStamped PurePursuit::outputTwist(geometry_msgs::Twist t) con
   double a = v * omega;
   ROS_INFO("lateral accel = %lf", a);
 
-  twist.twist.linear.x = fabs(a) > g_lateral_accel_limit ? max_v
-                    : v;
+  twist.twist.linear.x = fabs(a) > g_lateral_accel_limit ? max_v : v;
   twist.twist.angular.z = omega;
 
   return twist;
@@ -392,7 +385,7 @@ geometry_msgs::TwistStamped PurePursuit::go()
     return outputZero();
   }
 
-  // ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,next_target.z);
+  ROS_WARN("next_target : ( %lf , %lf , %lf)", position_of_next_target_.x, position_of_next_target_.y,position_of_next_target_.z);
 
   return outputTwist(calcTwist(calcCurvature(position_of_next_target_), getCmdVelocity(0)));
 

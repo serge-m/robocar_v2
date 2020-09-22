@@ -59,9 +59,7 @@ int main(int argc, char **argv)
       nh.subscribe("/base_waypoints", 10, &waypoint_follower::PurePursuit::callbackFromWayPoints, &pp);
   ros::Subscriber ndt_subscriber =
       nh.subscribe("robocar/odometry", 10, &waypoint_follower::PurePursuit::callbackFromCurrentPose, &pp);
-  // ros::Subscriber est_twist_subscriber =
-  //     nh.subscribe("current_velocity", 10, &waypoint_follower::PurePursuit::callbackFromCurrentVelocity, &pp);
-
+  
   ROS_INFO("pure pursuit start");
   ros::Rate loop_rate(LOOP_RATE);
   while (ros::ok())
