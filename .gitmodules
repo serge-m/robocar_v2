@@ -4,3 +4,6 @@
 [submodule "catkin_ws/src/pwm_radio_arduino"]
 	path = catkin_ws/src/pwm_radio_arduino
 	url = ../pwm_radio_arduino.git
+[submodule "catkin_ws/src/steering_translator"]
+	path = catkin_ws/src/steering_translator
+	url = git@github.com:serge-m/steering_translator.git
