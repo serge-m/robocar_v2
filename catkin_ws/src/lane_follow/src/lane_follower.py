@@ -4,7 +4,7 @@ import numpy as np
 # from typing import Dict, Optional
 import yaml
 import cv2
-import rospy
+import time
 
 def _load_camera_params(path):
     with open(path) as f:
@@ -30,28 +30,35 @@ class LaneFollower:
 
 #    (self, image: np.ndarray, debug_output: Optional[Dict[str, object]]=None) -> np.ndarray 
     def __call__(self, image, debug_output=None):
-        waypoints = [image.ravel()[:2]]
+        waypoints = [[1, 0]]
         if self.camera_params is not None:
              # Undistort image
             image_undist = undistort(image, self.camera_params, self.resize_if_needed)
-            # cv2.imwrite('C:/tmp/img/' + str(rospy.get_time()) + '.jpg', image_undist)
+            
+            
             # Make gradient and color treshold
             treshold = treshold_binary(image_undist)
             # get matrices for perspective transform
-            perspective_M, Minv = get_warp_matrices(image_undist)
+            perspective_M, Minv = get_warp_matrices(image_undist, self.camera_params['camera_matrix'])
             # Warp tresholded image
             warp_img = unwarp(treshold, perspective_M)
+            warp_save = np.dstack((warp_img, warp_img, warp_img)) * 255
+            
             # Calculate polynomials for left and right lanes
             left_fit, right_fit, out_img = fit_polynomial(warp_img)
-            predicted_waypoints = get_waypoints(image.shape, left_fit, right_fit, Minv)
+            predicted_waypoints = get_waypoints(image.shape, left_fit, right_fit, self.camera_params['camera_matrix'])
             if (predicted_waypoints.size > 0): 
                 waypoints = predicted_waypoints
-                rospy.loginfo("waypoints are %s", [1, waypoints[0][1]])
+                # print(waypoints[0])
+                # counter = str(time.time()) + str(waypoints[0])
+                # cv2.imwrite('C:/tmp/img/' + counter + '.jpg', image)
+                # cv2.imwrite('C:/tmp/img/' + counter + '.jpg', image_undist)
+                # cv2.imwrite('C:/tmp/img/warp_' + counter + '.jpg', warp_save)
         else:
             image_undist = image
         if debug_output is not None:
             debug_output['vis'] = image_undist
-        return [1, waypoints[0][1]]
+        return waypoints[0]
 
 # (image: np.ndarray, camera_params: Dict, resize_if_needed: bool) -> np.ndarray
 def undistort(image, camera_params, resize_if_needed):
@@ -73,27 +80,33 @@ def undistort(image, camera_params, resize_if_needed):
 # get middle line points from left and right lane polynomials
 def get_waypoints(shape, left_fit, right_fit, M):
     ploty = np.linspace(0, shape[0]-1, shape[0])
+    # if the image is empty - return a point straight ahead from the robocar
+    if (np.count_nonzero(left_fit) == np.count_nonzero(right_fit) == 0):
+        return np.array([[1, 0]])
     try:
         left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
         right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
     except TypeError:
         # Avoids an error if `left` and `right_fit` are still none or incorrect
-        rospy.loginfo('The function failed to fit a line!')
         left_fitx = 1*ploty**2 + 1*ploty
         right_fitx = 1*ploty**2 + 1*ploty
-
     middle_fitx = (left_fitx + right_fitx) / 2
-
-    center_fitx = (left_fitx + right_fitx) / 2
-    
-    center_array = np.dstack((middle_fitx, ploty))
-    warp_arr = cv2.perspectiveTransform(center_array, M)
-    warp_arr[:, :, 0]-= int(shape[1] / 2)
-    warp_arr = warp_arr[(warp_arr[:,:,0] > 0.) & (warp_arr[:,:,1] > 0.) 
-                        & (warp_arr[:,:,0] < shape[1]) & (warp_arr[:,:,1] < shape[0])]
-    warp_arr[:,[0, 1]] = warp_arr[:,[1, 0]]
-    
-    return warp_arr
+    # print(middle_fitx)
+    center_array = np.column_stack((middle_fitx, np.flip(ploty, 0)))
+    # print(center_array)
+    # substract img.width/2 to find deviation from center line
+    center_array[:, 0]-= int(shape[1] / 2)
+    # print(center_array)
+    # divide by scaling parameters in x and y directions
+    # to find coodrinates in required units and required sign
+    center_array[:, 0]/= -M[0][0]
+    # center_array[:, 0]/= M[0][0]
+    center_array[:, 1]/= M[1][1]
+    # print(center_array)
+    center_array[:,[0, 1]] = center_array[:,[1, 0]]
+    # print(center_array[0])
+   
+    return center_array
 
 # Gradient and color tresholds
 def treshold_binary(image, s_thresh=(200, 255), sx_thresh=(20, 90)):
@@ -122,10 +135,22 @@ def treshold_binary(image, s_thresh=(200, 255), sx_thresh=(20, 90)):
     return combined_binary
 
 # get Matrix and Inverse Matrix for Perspective Transform
-def get_warp_matrices(image):
+def get_warp_matrices(image, M):
+    w = image.shape[1] # 1280
+    h = image.shape[0] # 960
     # get transform points
-    src = np.float32([[0, image.shape[0]-220],[520, 520],[image.shape[1]-485, 520],[image.shape[1], image.shape[0]-260]])
-    dst = np.float32([[300, image.shape[0]],[300, 0],[image.shape[1]-300, 0],[image.shape[1]-300, image.shape[0]]])
+    # TODO points should be dependant on height and angle of camera, not hard-corded
+    src = np.float32([[0, h-150],[555, 520],[w-530, 520],[w, h-150]])
+    # scaling parameters in x and y directions
+    # road width will be equal to one unit length
+    x = M[0][0]
+    y = M[1][1]
+
+    dst = np.float32([[int((w-x)/2), h],
+                    [int((w-x)/2), int((h-y))],
+                    [int((w+x)/2), int((h-y))],
+                    [int((w+x)/2), h]])
+    
     M = cv2.getPerspectiveTransform(src, dst)
     Minv = cv2.getPerspectiveTransform(dst, src)
     return  M, Minv
@@ -144,7 +169,10 @@ def fit_polynomial(binary_warped, ym_per_pix=1, xm_per_pix=1):
     leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
     left_fit = [0,0,0]
     right_fit = [0,0,0]
-    if (leftx.size & lefty.size & rightx.size & righty.size):        
+    
+    # check if the image is not empty
+    if (leftx.size > 0 and lefty.size > 0 and rightx.size > 0 and righty.size > 0):
+    # if all(v if v.size > 0 for v in [leftx, lefty, rightx, righty]): 
         left_fit = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
         right_fit = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)      
     
@@ -152,76 +180,81 @@ def fit_polynomial(binary_warped, ym_per_pix=1, xm_per_pix=1):
 
 # find lane pixels in image with sliding windows
 def find_lane_pixels(binary_warped):
-    # Take a histogram of the bottom half of the image
-    histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
     # Create an output image to draw on and visualize the result
     out_img = np.dstack((binary_warped, binary_warped, binary_warped))
-    # Find the peak of the left and right halves of the histogram
-    # These will be the starting point for the left and right lines
-    midpoint = np.int(histogram.shape[0]//2)
-    leftx_base = np.argmax(histogram[:midpoint])
-    rightx_base = np.argmax(histogram[midpoint:]) + midpoint
+    # Take a histogram of the bottom half of the image
+    histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
+    
+    # if the image is empty
+    if (np.amax(histogram) < 10):
+        leftx = lefty = rightx = righty = np.array([])
+    else:        
+        # Find the peak of the left and right halves of the histogram
+        # These will be the starting point for the left and right lines
+        midpoint = np.int(histogram.shape[0]//2)
+        leftx_base = np.argmax(histogram[:midpoint])
+        rightx_base = np.argmax(histogram[midpoint:]) + midpoint
+    
+        # HYPERPARAMETERS
+        # Choose the number of sliding windows
+        nwindows = 8
+        # Set the width of the windows +/- margin
+        margin = 100
+        # Set minimum number of pixels found to recenter window
+        minpix = 50
 
-    # HYPERPARAMETERS
-    # Choose the number of sliding windows
-    nwindows = 8
-    # Set the width of the windows +/- margin
-    margin = 100
-    # Set minimum number of pixels found to recenter window
-    minpix = 50
+        # Set height of windows - based on nwindows above and image shape
+        window_height = np.int(binary_warped.shape[0]//nwindows)
+        # Identify the x and y positions of all nonzero pixels in the image
+        nonzero = binary_warped.nonzero()
+        nonzeroy = np.array(nonzero[0])
+        nonzerox = np.array(nonzero[1])
+        # Current positions to be updated later for each window in nwindows
+        leftx_current = leftx_base
+        rightx_current = rightx_base
 
-    # Set height of windows - based on nwindows above and image shape
-    window_height = np.int(binary_warped.shape[0]//nwindows)
-    # Identify the x and y positions of all nonzero pixels in the image
-    nonzero = binary_warped.nonzero()
-    nonzeroy = np.array(nonzero[0])
-    nonzerox = np.array(nonzero[1])
-    # Current positions to be updated later for each window in nwindows
-    leftx_current = leftx_base
-    rightx_current = rightx_base
+        # Create empty lists to receive left and right lane pixel indices
+        left_lane_inds = []
+        right_lane_inds = []
 
-    # Create empty lists to receive left and right lane pixel indices
-    left_lane_inds = []
-    right_lane_inds = []
+        # Step through the windows one by one
+        for window in range(nwindows):
+            # Identify window boundaries in x and y (and right and left)
+            win_y_low = binary_warped.shape[0] - (window+1)*window_height
+            win_y_high = binary_warped.shape[0] - window*window_height
+            # Find the four below boundaries of the window 
+            win_xleft_low = leftx_current - margin  # Update this
+            win_xleft_high = leftx_current + margin  # Update this
+            win_xright_low = rightx_current - margin  # Update this
+            win_xright_high = rightx_current + margin  # Update this       
+            
+            # Identify the nonzero pixels in x and y within the window 
+            good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
+            (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
+            good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
+            (nonzerox >= win_xright_low) &  (nonzerox < win_xright_high)).nonzero()[0]
+            # Append these indices to the lists
+            left_lane_inds.append(good_left_inds)
+            right_lane_inds.append(good_right_inds)
+            # If you found > minpix pixels, recenter next window 
+            # (`right` or `leftx_current`) on their mean position 
+            if len(good_left_inds) > minpix:
+                leftx_current=np.int(np.mean(nonzerox[good_left_inds]))
+            if (good_right_inds.shape[0] > minpix):
+                rightx_current=np.int(np.mean(nonzerox[good_right_inds]))
 
-    # Step through the windows one by one
-    for window in range(nwindows):
-        # Identify window boundaries in x and y (and right and left)
-        win_y_low = binary_warped.shape[0] - (window+1)*window_height
-        win_y_high = binary_warped.shape[0] - window*window_height
-        # Find the four below boundaries of the window 
-        win_xleft_low = leftx_current - margin  # Update this
-        win_xleft_high = leftx_current + margin  # Update this
-        win_xright_low = rightx_current - margin  # Update this
-        win_xright_high = rightx_current + margin  # Update this       
-        
-        # Identify the nonzero pixels in x and y within the window 
-        good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
-        (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
-        good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
-        (nonzerox >= win_xright_low) &  (nonzerox < win_xright_high)).nonzero()[0]
-        # Append these indices to the lists
-        left_lane_inds.append(good_left_inds)
-        right_lane_inds.append(good_right_inds)
-        # If you found > minpix pixels, recenter next window 
-        # (`right` or `leftx_current`) on their mean position 
-        if len(good_left_inds) > minpix:
-            leftx_current=np.int(np.mean(nonzerox[good_left_inds]))
-        if (good_right_inds.shape[0] > minpix):
-            rightx_current=np.int(np.mean(nonzerox[good_right_inds]))
+        # Concatenate the arrays of indices (previously was a list of lists of pixels)
+        try:
+            left_lane_inds = np.concatenate(left_lane_inds)
+            right_lane_inds = np.concatenate(right_lane_inds)
+        except ValueError:
+            # Avoids an error if the above is not implemented fully
+            pass
 
-    # Concatenate the arrays of indices (previously was a list of lists of pixels)
-    try:
-        left_lane_inds = np.concatenate(left_lane_inds)
-        right_lane_inds = np.concatenate(right_lane_inds)
-    except ValueError:
-        # Avoids an error if the above is not implemented fully
-        pass
-
-    # Extract left and right line pixel positions
-    leftx = nonzerox[left_lane_inds]
-    lefty = nonzeroy[left_lane_inds] 
-    rightx = nonzerox[right_lane_inds]
-    righty = nonzeroy[right_lane_inds]
+        # Extract left and right line pixel positions
+        leftx = nonzerox[left_lane_inds]
+        lefty = nonzeroy[left_lane_inds] 
+        rightx = nonzerox[right_lane_inds]
+        righty = nonzeroy[right_lane_inds]
  
     return leftx, lefty, rightx, righty, out_img

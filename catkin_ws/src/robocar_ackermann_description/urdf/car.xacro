@@ -313,7 +313,7 @@ limitations under the License.
   <!-- camera -->
   <gazebo reference="camera">
     <sensor type="camera" name="camera1">
-      <update_rate>10.0</update_rate>
+      <update_rate>30.0</update_rate>
       <camera name="head">
         <horizontal_fov>2.3</horizontal_fov>
         <image>
@@ -373,7 +373,7 @@ limitations under the License.
   </link>
 
   <joint type="fixed" name="camera_joint">
-    <origin xyz="0.2 0 ${chassis_height}" rpy="0 0.2 0"/>
+    <origin xyz="0.2 0 ${chassis_height+0.2}" rpy="0 0.2 0"/>
     <child link="camera"/>
     <parent link="base_link"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
