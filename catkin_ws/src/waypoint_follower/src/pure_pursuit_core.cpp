@@ -42,12 +42,15 @@ void PurePursuit::callbackFromCurrentPose(const nav_msgs::OdometryConstPtr &msg)
   pose_set_ = true;
   current_velocity_ = odom.twist;
   velocity_set_ = true;
+  // ROS_WARN("current pose and velocity : ( %lf , %lf , %lf, %lf)", current_pose_.pose.position.x, current_pose_.pose.position.y, current_velocity_.twist.linear.x, current_velocity_.twist.angular.z);
+
 }//processing frequency
 
 void PurePursuit::callbackFromWayPoints(const robocar_msgs::LaneConstPtr &msg)
 {
   current_waypoints_.setPath(*msg);
   waypoint_set_ = true;
+  // ROS_WARN("size of waypoints is : ( %i)", current_waypoints_.getSize());
   // ROS_INFO_STREAM("waypoint subscribed");
 }
 
@@ -60,7 +63,6 @@ double PurePursuit::getCmdVelocity(int waypoint) const
   }
 
   double velocity = current_waypoints_.getWaypointVelocityMPS(waypoint);
-  // ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h ( " << velocity << "m/s )");
   return velocity;
 }
 
@@ -238,11 +240,13 @@ bool PurePursuit::verifyFollowing() const
   if (displacement < displacement_threshold_ && relative_angle < relative_angle_threshold_)
   {
     // ROS_INFO("Following : True");
+    // ROS_WARN("following_flag is : True");
     return true;
   }
   else
   {
     // ROS_INFO("Following : False");
+    // ROS_WARN("following_flag is : False");
     return false;
   }
 }
@@ -251,7 +255,7 @@ geometry_msgs::Twist PurePursuit::calcTwist(double curvature, double cmd_velocit
   // verify whether vehicle is following the path
   bool following_flag = verifyFollowing();
   static double prev_angular_velocity = 0;
-
+  
   geometry_msgs::Twist twist;
   twist.linear.x = cmd_velocity;
   if (!following_flag)
@@ -276,6 +280,7 @@ void PurePursuit::getNextWaypoint()
   if (path_size == 0)
   {
     num_of_next_waypoint_ = -1;
+    // ROS_WARN("if waypoints are not given, do nothing num_of_next_waypoint_ is : ( %i)", num_of_next_waypoint_);
     return;
   }
 
@@ -287,13 +292,20 @@ void PurePursuit::getNextWaypoint()
     {
       ROS_INFO("search waypoint is the last");
       num_of_next_waypoint_ = i;
+      // ROS_WARN(" search waypoint is the last num_of_next_waypoint_ is : ( %i)", num_of_next_waypoint_);
       return;
     }
 
     // if there exists an effective waypoint
-    if (getPlaneDistance(current_waypoints_.getWaypointPosition(i), current_pose_.pose.position) > lookahead_distance_)
+    if (num_of_next_waypoint_ <= i && getPlaneDistance(current_waypoints_.getWaypointPosition(i), current_pose_.pose.position) > lookahead_distance_)
     {
       num_of_next_waypoint_ = i;
+      // ROS_WARN("i is : ( %i)", i);
+      
+      // ROS_WARN("current_waypoints_.getWaypointPosition(i) is : ( %lf, %lf)", current_waypoints_.getWaypointPosition(i).x, current_waypoints_.getWaypointPosition(i).y);
+      // ROS_WARN("current_pose_.pose.position is : ( %lf, %lf)", current_pose_.pose.position.x, current_pose_.pose.position.y);
+      
+      // ROS_WARN("if there exists an effective waypoint num_of_next_waypoint_ is : ( %i)", num_of_next_waypoint_);
       //ROS_ERROR_STREAM("wp = " << i << " dist = " << getPlaneDistance(current_waypoints_.getWaypointPosition(i), current_pose_.pose.position) );
       return;
     }
@@ -301,6 +313,8 @@ void PurePursuit::getNextWaypoint()
 
   // if this program reaches here , it means we lost the waypoint!
   num_of_next_waypoint_ = -1;
+  // ROS_WARN("we lost the waypoint num_of_next_waypoint_ is : ( %i)", num_of_next_waypoint_);
+    
   return;
 }
 
@@ -373,9 +387,10 @@ geometry_msgs::TwistStamped PurePursuit::go()
       num_of_next_waypoint_ == (static_cast<int>(current_waypoints_.getSize() - 1)))
   {
     position_of_next_target_ = current_waypoints_.getWaypointPosition(num_of_next_waypoint_);
+    // ROS_WARN("first or last position_of_next_target_ is : ( %lf , %lf)", position_of_next_target_.x, position_of_next_target_.y);
     return outputTwist(calcTwist(calcCurvature(position_of_next_target_), getCmdVelocity(0)));
   }
-
+  
   // linear interpolation and calculate angular velocity
   interpolate_flag = interpolateNextTarget(num_of_next_waypoint_, &position_of_next_target_);
 
@@ -385,7 +400,7 @@ geometry_msgs::TwistStamped PurePursuit::go()
     return outputZero();
   }
 
-  ROS_WARN("next_target : ( %lf , %lf , %lf)", position_of_next_target_.x, position_of_next_target_.y,position_of_next_target_.z);
+  // ROS_WARN("next_target : ( %lf , %lf)", position_of_next_target_.x, position_of_next_target_.y);
 
   return outputTwist(calcTwist(calcCurvature(position_of_next_target_), getCmdVelocity(0)));
 

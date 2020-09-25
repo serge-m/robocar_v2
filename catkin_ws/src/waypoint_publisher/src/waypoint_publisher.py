@@ -29,8 +29,8 @@ class WaypointPublisher(object):
     def new_waypoint_loader(self, form):        
         waypoints = self.get_waypoints(form)
         self.publish(waypoints)
-        rospy.loginfo('Waypoints published')
-        rospy.loginfo(waypoints)
+        # rospy.loginfo('Waypoints published')
+        # rospy.loginfo(waypoints)
         
     def quaternion_from_yaw(self):
         # TODO maybe change later 0 to smth else

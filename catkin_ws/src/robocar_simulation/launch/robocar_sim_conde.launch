@@ -24,24 +24,8 @@
 
   <!-- <arg name="rvizconfig" default="$(find robocar_simulation)/config/robocar.rviz" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" /> -->
-  <!-- <node type="pid_supervisor.py" pkg="pid_controller" name="pid_supervisor" output="screen"> -->
-  <!-- </node> -->
-  
-  <!-- <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen">
-  </node> -->
-   <!-- <arg name="velocity" default="0.5"/>
-  <node type="waypoint_publisher.py" pkg="waypoint_publisher" name="waypoint_publisher" output="screen">
-    <param name="velocity" value="$(arg velocity)"/>
-    <param name="form" value="straight"/> -->
-    <!-- <param name="form" value="45degree"/> -->
-    <!-- <param name="form" value="parabola"/> -->
-  <!-- </node> -->
 
-  <!-- rosrun waypoint_follower pure_pursuit -->
-  <!-- <arg name="linear_interpolate_mode" default="True"/>	
-	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="log">
-		<param name="linear_interpolate_mode" value="$(arg linear_interpolate_mode)"/>
-	</node> -->
+
 
 
 

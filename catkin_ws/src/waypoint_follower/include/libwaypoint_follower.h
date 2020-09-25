@@ -68,15 +68,6 @@ public:
   bool isFront(int waypoint, geometry_msgs::Pose current_pose) const;
 };
 
-// inline function (less than 10 lines )
-inline double kmph2mps(double velocity_kmph)
-{
-  return (velocity_kmph * 1000) / (60 * 60);
-}
-inline double mps2kmph(double velocity_mps)
-{
-  return (velocity_mps * 60 * 60) / 1000;
-}
 inline double deg2rad(double deg)
 {
   return deg * M_PI / 180;

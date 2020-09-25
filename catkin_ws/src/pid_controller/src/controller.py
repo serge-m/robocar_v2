@@ -31,7 +31,10 @@ class Controller(object):
         
         # throttle = self.throttle_controller.step(vel_error, sample_time)
         throttle = linear_vel
-        steering = self.steer_controller.step(ang_vel_error, sample_time)
+        if (sample_time == 0):
+            steering = 0
+        else:
+            steering = -self.steer_controller.step(ang_vel_error, sample_time)
         
        
             
