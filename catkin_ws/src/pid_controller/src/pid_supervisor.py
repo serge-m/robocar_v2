@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 import rospy
 import message_filters
-from std_msgs.msg import Header, Float32 
+from std_msgs.msg import Header, Float32
 from sensor_msgs.msg import LaserScan, Range
 from geometry_msgs.msg import PointStamped, Point, Vector3, Vector3Stamped, Twist
 from pid_controller import PIDController, get_heading_angle
 import tf
 import math
 from visualization_msgs.msg import Marker
-from ackermann_msgs.msg import AckermannDrive
-from pwm_radio_arduino.msg import steering_tfm
+from ackermann_msgs.msg import AckermannDriveStamped
 import threading
 import numpy as np
 import time
@@ -79,15 +78,23 @@ def callback(lf_vector):
         rospy.loginfo("heading_vector is %s",heading_vector)
         rospy.loginfo("pid.get_speed() is %s",pid.get_speed())
         rospy.loginfo("pid.get_w() is %s",pid.get_w())
-        msg = AckermannDrive(speed=speed_adjuster(pid.get_speed()), 
-                            steering_angle=pid.get_w(),
-                            steering_angle_velocity=0.5,
-                            acceleration=1,
-                            jerk=0.01)
-        pub_ackermann.publish(msg)
-        pub_ackermann_sim.publish(msg)
 
-    rate.sleep()               
+        msg = create_ackermann_message(
+            speed=speed_adjuster(pid.get_speed()),
+            angle=pid.get_w()
+        )
+        pub_ackermann.publish(msg)
+
+    rate.sleep()
+
+
+def create_ackermann_message(speed, angle):
+    ack_msg = AckermannDriveStamped()
+    ack_msg.header.stamp = rospy.Time.now()
+    ack_msg.drive.steering_angle = angle
+    ack_msg.drive.speed = speed
+    return ack_msg
+
 
 def make_vel_msg(speed, angular_z):
     vel_msg = Twist()
@@ -101,6 +108,7 @@ def make_vel_msg(speed, angular_z):
     vel_msg.angular.y = 0
     vel_msg.angular.z = angular_z
     return vel_msg
+
 
 def make_marker_for_rviz(heading_vector):
     # marker for vizualisation in RVIZ
@@ -136,42 +144,17 @@ def control():
     # ts = message_filters.ApproximateTimeSynchronizer([ao_vector, lf_vector, gtg_vector, at_obstacle], 1, 0.8)
     ts = message_filters.ApproximateTimeSynchronizer([lf_vector], 1, 0.8)
     ts.registerCallback(callback)
-    
+
     rospy.spin()
 
 
-
-
-def start_thread_pub_tfm_params():
-    thread = threading.Thread(target=pub_tfm_params,args=())
-    thread.setDaemon(True)
-    thread.start()
-
-def pub_tfm_params():
-    pub_tfm = rospy.Publisher("pwm_radio_arduino/steering_tfm", steering_tfm, queue_size=1, latch=False)
-    while not rospy.is_shutdown():
-        tfm = steering_tfm(
-            -1, 0, 1,           # input range for angle
-            90-30, 90, 90+30,   # output range for angle
-            -0.3, 0, 0.5,           # input range for speed
-            90-14, 90, 90+10      # output range for speed
-        )
-        pub_tfm.publish(tfm)  
-        rospy.logdebug("pub_tfm")
-        time.sleep(1) 
-
-
 if __name__ == '__main__':
-
     rospy.init_node('pid_supervisor', anonymous=True)
-    start_thread_pub_tfm_params()
-    
     last_time = rospy.Time.now()
     pid = PIDController(kp=4.0, ki=0.01, kd=4.0)
-    t = tf.TransformListener()
     pub = rospy.Publisher('/robocar/cmd_vel', Twist, queue_size=1)
-    pub_ackermann_sim = rospy.Publisher("/ackermann_cmd", AckermannDrive, queue_size=1)
+    pub_ackermann = rospy.Publisher(
+        "ackermann_cmd", AckermannDriveStamped, queue_size=1)
     vis_pub = rospy.Publisher('/visualize/blend_vectors', Marker, queue_size=1)
-    rate = rospy.Rate(50) # 10hz
-    pub_ackermann = rospy.Publisher("pwm_radio_arduino/driver_ackermann", AckermannDrive, queue_size=1, latch=False)
+    rate = rospy.Rate(50)  # 10hz
     control()
