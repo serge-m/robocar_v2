@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/>
+  <arg name="simulation" default="1" />
+
+  <include file="$(find robocar_main)/launch/components/controller.launch">
+  </include>
+
+  <group if="$(arg simulation)">
+    <include file="$(find robocar_simulation)/launch/robocar_sim.launch">
+      <arg name="world_name" value="$(arg world_name)"/>
+    </include>
+  </group>
+
+  <group unless="$(arg simulation)">
+    <include file="$(find robocar_main)/launch/components/hardware.launch">
+    </include>
+  </group>
+</launch>

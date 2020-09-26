@@ -1,4 +1,5 @@
 <launch>
+  <!--  TODO: this is a mess and it will be removed-->
   <env name="GAZEBO_MODEL_PATH" value="$(find robocar_description)/models"/>
   <env name="GAZEBO_RESOURCE_PATH" value="$(find robocar_description)"/>
 
