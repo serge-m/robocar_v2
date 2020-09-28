@@ -54,11 +54,13 @@
   </node>
 
   <!-- Publish ackermann_msg for ackermann_controller -->
+  <!--  TODO: should be moved to robocar_main/launch/components/controller-->
   <node type="control_supervisor.py" pkg="pid_controller" name="control_supervisor_node" output="screen">
   </node>
 
   <!-- Publish base path waypoints in one of shapes -->
   <arg name="velocity" default="0.5"/>
+  <!--  TODO: should be moved to robocar_main/launch/components/controller-->
   <node type="waypoint_publisher.py" pkg="waypoint_publisher" name="waypoint_publisher" output="screen">
     <param name="velocity" value="$(arg velocity)"/>
     <!-- <param name="form" value="straight"/> -->
@@ -67,6 +69,7 @@
   </node>
 
   <!-- Pure Pursuit waypoint follower -->
+  <!--  TODO: should be moved to robocar_main/launch/components/controller-->
   <arg name="linear_interpolate_mode" default="True"/>	
 	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="log">
 		<param name="linear_interpolate_mode" value="$(arg linear_interpolate_mode)"/>
