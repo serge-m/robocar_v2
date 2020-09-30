@@ -9,8 +9,14 @@ Self driving robo car. Target functionality:
 * road signs recognition (planned)
 
 
+## Architecture (in progress)
 
-## How to build
+![architecture](pictures/robocar_v2.svg)
+
+
+## How to build 
+
+Be creative in case of problems.
 
 Install ROS melodic: [Ubuntu install of ROS Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu) 
 
