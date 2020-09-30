@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-<!--  TODO: move the launching of all the controllers here-->
- <!-- Publish ackermann_msg for ackermann_controller -->
+  <!-- Publish ackermann_msg for ackermann_controller -->
   <node type="control_supervisor.py" pkg="pid_controller" name="control_supervisor_node" output="screen">
   </node>
 
