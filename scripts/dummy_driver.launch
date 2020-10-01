@@ -11,11 +11,7 @@
   <node type="obstacle_detection.py" pkg="avoid_obstacles" name="obstacle_detection" output="screen">
   </node>
 
-  <node type="pid_supervisor.py" pkg="pid_controller" name="pid_supervisor" output="screen">
-  </node>
-  
-  <node type="gtg.py" pkg="pid_controller" name="gtg" output="screen">
-  </node>
+
 
 </launch> -->
 
