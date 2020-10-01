@@ -22,8 +22,7 @@
     <param name="camera_params" value="$(arg camera_params)"/>
   </node> -->
 
-  <!-- <arg name="rvizconfig" default="$(find robocar_simulation)/config/robocar.rviz" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" /> -->
+  
 
 
 

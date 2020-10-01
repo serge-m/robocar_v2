@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-
-import csv
 import math
 import numpy as np
 
@@ -11,7 +9,6 @@ from robocar_msgs.msg import Lane, Waypoint
 import tf
 import rospy
 
-CSV_HEADER = ['x', 'y', 'z', 'yaw']
 MAX_DECEL = 1.0
 
 

@@ -53,4 +53,10 @@
     <param name="publish_frequency" value="30.0"/>
   </node>
 
+  <node name="marker_publisher" pkg="robocar_simulation" type="marker_publisher.py">
+  </node>
+
+  <arg name="rvizconfig" default="$(find robocar_simulation)/config/robocar.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
 </launch>
