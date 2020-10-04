@@ -7,3 +7,6 @@
 [submodule "catkin_ws/src/steering_translator"]
 	path = catkin_ws/src/steering_translator
 	url = git@github.com:serge-m/steering_translator.git
+[submodule "catkin_ws/src/realsense-ros"]
+	path = catkin_ws/src/realsense-ros
+	url = https://github.com/IntelRealSense/realsense-ros.git
