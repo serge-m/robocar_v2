@@ -3,6 +3,7 @@
   <env name="GAZEBO_MODEL_PATH" value="$(find robocar_world)/models"/>
   <env name="GAZEBO_RESOURCE_PATH" value="$(find robocar_world)"/>
   
+  <!-- gazebo parameters -->
   <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/>
   <arg name="paused" default="true"/>
   <arg name="use_sim_time" default="true"/>
@@ -20,8 +21,7 @@
   <arg name="pitch" default="0.0"/>
   <arg name="yaw" default="0.0"/>
 
-  <arg name="cmd_timeout" default="0.5"/>
-
+  <!-- launch gazebo with predefined world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world_name)"/>
     <arg name="debug" value="$(arg debug)" />
@@ -31,8 +31,8 @@
     <arg name="headless" value="$(arg headless)"/>
   </include>
 
+  <!-- spawn robocar into the world -->
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
-
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
         args="-param robot_description -urdf -model robocar_robot
               -x $(arg x) -y $(arg y) -z $(arg z)
@@ -40,8 +40,9 @@
   
   <node name="controller_spawner" pkg="controller_manager" type="spawner"
     args="$(arg joint_params)" output="screen"/>
-
+  
   <!-- Control the steering, axle, and shock absorber joints. -->
+  <arg name="cmd_timeout" default="0.5"/>
   <node name="ackermann_controller" pkg="robocar_simulation"
         type="ackermann_controller.py"
         output="screen">
@@ -49,13 +50,29 @@
     <rosparam file="$(find robocar_simulation)/config/em_3905_ackermann_ctrlr_params.yaml" command="load"/>
   </node>
 
+  <!-- publish link states in tf -->
   <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="publish_frequency" value="30.0"/>
   </node>
 
+  <!-- publish arrow markers of steering and angular velocity for RVIZ -->
   <node name="marker_publisher" pkg="robocar_simulation" type="marker_publisher.py">
   </node>
 
+  <!-- node for rectifying camera images -->
+  <node name="image_proc" pkg="image_proc" type="image_proc" ns="camera/color">
+  </node>
+
+  <!-- node for perspective transformation of camera images -->
+  <node name="birds_eye_node" pkg="lane_follow" type="birds_eye_node.py"/>
+
+  <!-- node for following the lane using camera images -->
+  <!-- <arg name="camera_params" default="$(find robocar_config)/camera_calibration.yaml"/>
+  <node type="lf_node.py" pkg="lane_follow" name="lf_node" output="screen">
+    <param name="camera_params" value="$(arg camera_params)"/>
+  </node> -->
+
+  <!-- launch RVIZ -->
   <arg name="rvizconfig" default="$(find robocar_simulation)/config/robocar.rviz" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
