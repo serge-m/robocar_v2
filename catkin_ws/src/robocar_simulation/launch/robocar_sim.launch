@@ -64,13 +64,13 @@
   </node>
 
   <!-- node for perspective transformation of camera images -->
+  <node name="treshold_node" pkg="lane_follow" type="treshold_node.py"/>
+
+  <!-- node for binary tresholding of camera images -->
   <node name="birds_eye_node" pkg="lane_follow" type="birds_eye_node.py"/>
 
-  <!-- node for following the lane using camera images -->
-  <!-- <arg name="camera_params" default="$(find robocar_config)/camera_calibration.yaml"/>
-  <node type="lf_node.py" pkg="lane_follow" name="lf_node" output="screen">
-    <param name="camera_params" value="$(arg camera_params)"/>
-  </node> -->
+  <!-- node for polynomial fitting -->
+  <node name="fit_polynomial_node" pkg="lane_follow" type="fit_polynomial_node.py"/>
 
   <!-- launch RVIZ -->
   <arg name="rvizconfig" default="$(find robocar_simulation)/config/robocar.rviz" />

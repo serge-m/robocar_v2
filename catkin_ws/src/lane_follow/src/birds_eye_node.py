@@ -23,8 +23,7 @@ class BirdsEyeNode:
         cy = 517.3488
 
         # Camera position (in metres, degrees)
-        # Note that angle is not important if IMU is used
-        H = 0.305
+        H = 0.21
         theta = 0.00
         # theta *= (M_PI/180.0)
 
@@ -34,10 +33,10 @@ class BirdsEyeNode:
         # Wx and Wy are the width and height of the top-view image
         # x-axis is the direction pointing right in the top-view image
         # y-axis is the direction pointing down in the top-view image
-        Ox = 3.20
-        Oy = 6.30
-        Wx = 6.40
-        Wy = 4.80
+        Wx = 4.8
+        Wy = 3.6
+        Ox = Wx / 2
+        Oy = Wy
 
         # Scaling factor (in pixels/m)
         # (Use 80.0 for realtime low-res output but 160.0 for datasets)
