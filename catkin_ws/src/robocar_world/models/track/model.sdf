@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="track">
+    <pose>0 0 0.01  0 0 0</pose>
+    <static>true</static>
+    <link name="solid">
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>1</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>1</iyy><iyz>0</iyz><izz>1</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://track/track10.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>
