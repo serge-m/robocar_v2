@@ -28,31 +28,34 @@ limitations under the License.
 
   <!-- chassis_length is measured along the x axis, chassis_width
        along the y axis, and chassis_height along the z axis. -->
-  <xacro:property name="chassis_length" value="0.258"/>
-  <xacro:property name="chassis_width" value="0.168"/>
+  <xacro:property name="chassis_length" value="0.40"/>
+  <xacro:property name="chassis_width" value="0.15"/>
   <xacro:property name="chassis_height" value="0.01"/>
   <xacro:property name="chassis_mass" value="2.788"/>
 
   <!-- hub_dia and tire_dia are the diameters of the hub and tire,
-       respectively. hex_hub_depth is the distance that the hex hub is
-       inset from the outer edge of the tire. It is set so that each wheel
-       is a "zero offset" wheel. hex_hub_depth = tire_width / 2 -
-       axle_length. -->
-  <xacro:property name="hub_dia" value="0.09652"/>
-  <xacro:property name="tire_dia" value="0.14605"/>
-  <xacro:property name="tire_width" value="0.0889"/>
-  <xacro:property name="hex_hub_depth" value="0.01445"/>
+       respectively. -->
+  <xacro:property name="hub_dia" value="0.7"/>
+  <xacro:property name="tire_dia" value="0.10"/>
+  <xacro:property name="tire_width" value="0.05"/>
+
   <xacro:property name="wheel_mass" value="0.29"/>
 
   <!-- hex_hub_dist is the distance between left and right hex hubs when
        the shock absorbers are fully extended. axle_length is the distance
        from a U joint to the corresponding hex hub. wheel_travel is the
        vertical wheel travel. -->
-  <xacro:property name="wheelbase" value="0.335"/>
-  <xacro:property name="hex_hub_dist" value="0.365"/>
+  <xacro:property name="wheelbase" value="0.30"/>
+  <xacro:property name="hex_hub_dist" value="0.33"/>
   <xacro:property name="axle_length" value="0.03"/>
   <xacro:property name="wheel_travel" value="0.084"/>
   <xacro:property name="shock_z_offset" value="0.0655"/>
+
+  <!-- hex_hub_depth is the distance that the hex hub is
+       inset from the outer edge of the tire. It is set so that each wheel
+       is a "zero offset" wheel. hex_hub_depth = tire_width / 2 -
+       axle_length. -->
+  <xacro:property name="hex_hub_depth" value="${tire_width / 2 - axle_length}"/>
 
   <!-- shock_eff_limit is 2 * ((shock_stroke / 2) * shock_spring_constant) N.
        shock_stroke is 0.028575 meters. shock_spring_constant, an approximation
@@ -352,7 +355,7 @@ limitations under the License.
   <!-- CAMERA -->
   <link name="camera"> 
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.001"/>
       <origin xyz="0 0 0" rpy=" 0 0 0"/>
       <inertia
           ixx="1e-6" ixy="0" ixz="0"
@@ -377,9 +380,9 @@ limitations under the License.
   </link>
 
   <joint type="fixed" name="camera_joint">
-    <origin xyz="0.2 0 ${chassis_height+0.2}" rpy="0 0 0"/>
+    <origin xyz="0.2 0 ${0.36}" rpy="0 ${pi / 3} 0"/>
     <child link="camera"/>
-    <parent link="base_link"/>
+    <parent link="chassis"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
   <!-- CAMERA END -->
