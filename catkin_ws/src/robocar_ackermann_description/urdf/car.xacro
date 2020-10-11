@@ -318,15 +318,15 @@ limitations under the License.
     <sensor type="camera" name="camera1">
       <update_rate>30.0</update_rate>
       <camera name="head">
-        <horizontal_fov>2.3</horizontal_fov>
+        <horizontal_fov>1.19</horizontal_fov>
         <image>
           <width>1280</width>
-          <height>960</height>
+          <height>720</height>
           <format>R8G8B8</format>
         </image>
         <clip>
           <near>0.02</near>
-          <far>100</far>
+          <far>10</far>
         </clip>
       </camera>
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
@@ -337,15 +337,15 @@ limitations under the License.
         <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
         <frameName>camera</frameName>
         <!-- 286. TODO camera matrix as in file, two numbers left-->
-        <focalLength>742.64</focalLength>
-        <CxPrime>666.99677</CxPrime>
-        <Cx>666.99677</Cx>
-        <Cy>517.3488</Cy>
-        <distortionK1>-0.279653</distortionK1>
-        <distortionK2>0.060243</distortionK2>
-        <distortionK3>0.0</distortionK3>
-        <distortionT1>0.002379</distortionT1>
-        <distortionT2>-0.000038</distortionT2>
+        <focalLength>944.023585</focalLength>
+        <CxPrime>641.408166</CxPrime>
+        <Cx>641.408166</Cx>
+        <Cy>397.025688</Cy>
+        <distortionK1>0.085703</distortionK1>
+        <distortionK2>-0.139378</distortionK2>
+        <distortionK3>0.005161</distortionK3>
+        <distortionT1>0.000282</distortionT1>
+        <distortionT2>0.000000</distortionT2>
       </plugin>
     </sensor>
     <material>Gazebo/Orange</material>
