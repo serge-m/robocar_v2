@@ -22,5 +22,10 @@
       <uri>model://lane_marking</uri>
       <pose>0.0 0.0 0.01 0 0 -1.5708</pose>
     </include>
+
+    <include>
+      <uri>model://reference_box</uri>
+      <pose>1.0 0.0 0.01 0 0 0</pose>
+    </include>
   </world>
 </sdf>
