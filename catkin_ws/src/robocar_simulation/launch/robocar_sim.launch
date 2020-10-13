@@ -72,8 +72,4 @@
   <!-- node for polynomial fitting -->
   <node name="fit_polynomial_node" pkg="lane_follow" type="fit_polynomial_node.py"/>
 
-  <!-- launch RVIZ -->
-  <arg name="rvizconfig" default="$(find robocar_simulation)/config/robocar.rviz" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
-
 </launch>
