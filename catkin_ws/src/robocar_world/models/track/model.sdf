@@ -14,7 +14,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://track/track10.dae</uri>
+            <uri>model://track/track11.dae</uri>
           </mesh>
         </geometry>
       </visual>
