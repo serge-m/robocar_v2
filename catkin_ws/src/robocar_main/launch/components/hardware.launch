@@ -8,7 +8,6 @@
     <node name="dynamic_reconfigure_load_translator" pkg="robocar_config" type="dynparam"
           args="load /steering_translator_node $(find robocar_config)/steering_translator.yaml"/>
 
-    <remap from="/camera/color/image_raw" to="/camera/rgb/image_raw"/>
     <include file="$(find realsense2_camera)/launch/rs_camera.launch">
         <arg name="enable_pointcloud" value="false"/>
         <arg name="enable_fisheye" value="false"/>

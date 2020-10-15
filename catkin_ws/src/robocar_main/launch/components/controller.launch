@@ -1,22 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-<!--  TODO: move the launching of all the controllers here-->
- <!-- Publish ackermann_msg for ackermann_controller -->
-  <node type="control_supervisor.py" pkg="pid_controller" name="control_supervisor_node" output="screen">
-  </node>
 
-  <!-- Publish base path waypoints in one of shapes -->
-  <arg name="velocity" default="0.5"/>
-  <node type="waypoint_publisher.py" pkg="waypoint_publisher" name="waypoint_publisher" output="screen">
-    <param name="velocity" value="$(arg velocity)"/>
-    <!-- <param name="form" value="straight"/> -->
-    <!-- <param name="form" value="45degree"/> -->
-    <param name="form" value="parabola"/>
-  </node>
-
-  <!-- Pure Pursuit waypoint follower -->
-  <arg name="linear_interpolate_mode" default="True"/>	
-	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="log">
-		<param name="linear_interpolate_mode" value="$(arg linear_interpolate_mode)"/>
-	</node>
 </launch>

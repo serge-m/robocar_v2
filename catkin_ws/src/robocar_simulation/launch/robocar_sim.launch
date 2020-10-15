@@ -58,18 +58,4 @@
   <!-- publish arrow markers of steering and angular velocity for RVIZ -->
   <node name="marker_publisher" pkg="robocar_simulation" type="marker_publisher.py">
   </node>
-
-  <!-- node for rectifying camera images -->
-  <node name="image_proc" pkg="image_proc" type="image_proc" ns="camera/color">
-  </node>
-
-  <!-- node for perspective transformation of camera images -->
-  <node name="treshold_node" pkg="lane_follow" type="treshold_node.py"/>
-
-  <!-- node for binary tresholding of camera images -->
-  <node name="birds_eye_node" pkg="lane_follow" type="birds_eye_node.py"/>
-
-  <!-- node for polynomial fitting -->
-  <node name="fit_polynomial_node" pkg="lane_follow" type="fit_polynomial_node.py"/>
-
 </launch>
