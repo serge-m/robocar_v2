@@ -76,10 +76,15 @@ class Treshold:
 
 # class for polynomial functions
 class FitPolynomial:
-    def __init__(self, nwindows=8, margin=100, minpix=50):
+    def __init__(self, s=100.0, nwindows=8, margin=100, minpix=50):
+        # polynomials for left, right and center lines
         self.left_fit = None
         self.right_fit = None
         self.center_array = None
+        # shape of an image
+        self.shape = None
+        # scaling factor (in pixels/m)
+        self.scale = s
         # HYPERPARAMETERS
         # Choose the number of sliding windows
         self.nwindows = nwindows
@@ -89,8 +94,8 @@ class FitPolynomial:
         self.minpix = minpix
 
     # get middle line points from left and right lane polynomials
-    def get_waypoints(self, shape, M):
-        ploty = np.linspace(0, shape[0]-1, shape[0])
+    def get_waypoints(self):        
+        ploty = np.linspace(0, self.shape[0]-1, math.ceil(self.shape[0]/self.scale)+1)
         # if the image is empty - return a point straight ahead from the robocar
         if (np.count_nonzero(self.left_fit) == np.count_nonzero(self.right_fit) == 0):
             return np.array([[1, 0]])
@@ -103,26 +108,28 @@ class FitPolynomial:
             right_fitx = 1*ploty**2 + 1*ploty
         middle_fitx = (left_fitx + right_fitx) / 2
         # print(middle_fitx)
-        center_array = np.column_stack((middle_fitx, np.flip(ploty, 0)))
+        center_array = np.column_stack((np.flip(middle_fitx, 0), ploty))
         # print(center_array)
         # substract img.width/2 to find deviation from center line
-        center_array[:, 0]-= int(shape[1] / 2)
+        center_array[:, 0]-= int(self.shape[1] / 2)
         # print(center_array)
         # divide by scaling parameters in x and y directions
         # to find coodrinates in required units and required sign
-        center_array[:, 0]/= -M[0]
-        # center_array[:, 0]/= M[0]
-        center_array[:, 1]/= M[1]
+        center_array[:, 0]/= -self.scale
+        center_array[:, 1]/= self.scale
         # print(center_array)
         center_array[:,[0, 1]] = center_array[:,[1, 0]]
-        # print(center_array[0])
-        self.center_array = center_array
+        # print(center_array[1:])
+        # save all points except the first, 
+        # because it is almost near the car
+        self.center_array = center_array[1:]
 
-        return center_array
+        return center_array[1:]
 
     # return polynomial for both lanes
     # ym_per_pix, xm_per_pix - meters per pixel in x or y dimension
     def fit_polynomial(self, treshold_warped, ym_per_pix=1, xm_per_pix=1):
+        self.shape = treshold_warped.shape
         # Find our lane pixels first
         leftx, lefty, rightx, righty = self.find_lane_pixels(treshold_warped)
         left_fit = [0,0,0]

@@ -70,7 +70,10 @@
   <node name="birds_eye_node" pkg="lane_follow" type="birds_eye_node.py"/>
 
   <!-- node for polynomial fitting -->
-  <node name="fit_polynomial_node" pkg="lane_follow" type="fit_polynomial_node.py"/>
+  <arg name="velocity" default="0.5"/>
+  <node name="fit_polynomial_node" pkg="lane_follow" type="fit_polynomial_node.py">
+    <param name="velocity" value="$(arg velocity)"/>
+  </node>
 
   <!-- launch RVIZ -->
   <arg name="rvizconfig" default="$(find robocar_simulation)/config/robocar.rviz" />
