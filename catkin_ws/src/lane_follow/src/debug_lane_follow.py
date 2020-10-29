@@ -1,17 +1,19 @@
 import sys, time
 import cv2
+import math
 # from lane_follower import LaneFollower
 from img_helpers import BirdsEye, Treshold, FitPolynomial
+from lane_follower import LaneFollower
 
 def test_birdsEye(image):
-    fx = 742.64941
-    fy = 742.64941
+    fx = 742.64
+    fy = 742.64
     cx = 666.99677
     cy = 517.3488
 
     # Camera position (in metres, degrees)
-    H = 0.21
-    theta = 0.00
+    H = 0.36
+    theta = math.pi / 3
 
     # Defining desired field-of-view (in metres)
     # Ox and Oy are the position of the projection of the optical center on the 
@@ -50,8 +52,22 @@ def test_get_waypoints(image):
 
     return fitPolynomial.center_array
 
+def test_lane_follow(image):
+    Wx = 4.8
+    Wy = 3.6
+    s = 100
+    C = (666.99677, 517.3488)
+    F = (742.64, 742.64)
+    H = 0.36
+    pitch = 60 * math.pi / 180
+    lane_follow = LaneFollower(Wx, Wy, s)
+    lane_follow.setCameraInfo(C, F)
+    lane_follow.setCameraPos(H, pitch)
+    lane_follow(image)
+    return lane_follow.birdsEyeImage.birds_image
+
 def main(args):
-    image_np = cv2.imread('C:/tmp/img/2.jpg')
+    image_np = cv2.imread('C:/tmp/img/0.jpg')    
     # testing binary tresholding
     treshold_image = test_treshold(image_np)
     cv2.imwrite('C:/tmp/img/treshold_image.jpg', treshold_image)
@@ -70,6 +86,11 @@ def main(args):
     # testing getting new waypoints
     waypoints = test_get_waypoints(image_np)
     print("waypoints", waypoints)
+
+    # testing whole laneFollower
+    image_test = cv2.imread('C:/tmp/img/0.jpg')
+    lf_img = test_lane_follow(image_test)
+    cv2.imwrite('C:/tmp/img/lf_img.jpg', lf_img)
     
     
 if __name__ == '__main__':

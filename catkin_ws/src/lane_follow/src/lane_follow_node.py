@@ -52,9 +52,15 @@ class LaneFollowNode:
         
         # publish waypoints of a lane
         self.publisher = rospy.Publisher ("/update_waypoints", Lane, queue_size=1)
+        self.img_pub = rospy.Publisher ("/camera/color/top_view", Image, queue_size=1)
+        
         rate = rospy.Rate(30)
         while not rospy.is_shutdown():  
-            if (self.lane_follower.waypoints is not None):   
+            if (self.lane_follower.waypoints is not None): 
+                # publish warped tresholded image
+                top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.birdsEyeImage.birds_image)
+                self.img_pub.publish(top_view_msg)
+                # publish Lane
                 self.publisher.publish(self.makeLane(self.lane_follower.waypoints))
                 rate.sleep()
     
