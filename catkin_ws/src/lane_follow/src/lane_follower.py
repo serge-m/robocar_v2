@@ -44,7 +44,7 @@ class LaneFollower:
 
     def setCameraPos(self, z, pitch):
         self.H = z
-        self.theta = np.pi /2 - pitch 
+        self.theta = pitch 
 
     def __call__(self, image):
         waypoints = [[1, 0]]

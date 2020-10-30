@@ -74,7 +74,7 @@ class WaypointPublisher(object):
     def publish(self, waypoints):
         lane = Lane()
         lane.header.frame_id = '/world'
-        lane.header.stamp = rospy.Time(0)
+        lane.header.stamp = rospy.Time.now()
         lane.waypoints = waypoints
         self.pub.publish(lane)
 

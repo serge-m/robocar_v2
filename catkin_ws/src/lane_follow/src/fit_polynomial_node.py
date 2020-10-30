@@ -57,7 +57,7 @@ class FitPolynomialNode:
 
         lane = Lane()
         lane.header.frame_id = 'base_link'
-        lane.header.stamp = rospy.Time(0)
+        lane.header.stamp = rospy.Time.now()
         lane.waypoints = msg
 
         return lane

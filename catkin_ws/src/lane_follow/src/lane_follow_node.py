@@ -12,7 +12,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from camera_info_manager import *
 from image_geometry import PinholeCameraModel
 
-from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Quaternion, PoseStamped
 from sensor_msgs.msg import Image, CameraInfo
 from robocar_msgs.msg import Lane, Waypoint
 
@@ -39,7 +39,7 @@ class LaneFollowNode:
         self.tf_listener = tf.TransformListener()
         try:
             # wait a little bit for transfrormation from base frame to camera frame
-            self.tf_listener.waitForTransform("base_link", "camera", rospy.Time(0),rospy.Duration(4.0))
+            self.tf_listener.waitForTransform("base_link", "camera", rospy.Time(0), rospy.Duration(4.0))
             (trans, rot) = self.tf_listener.lookupTransform("base_link", "camera", rospy.Time(0))
             (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
             # set camera position in LaneFollower
@@ -55,33 +55,42 @@ class LaneFollowNode:
         self.img_pub = rospy.Publisher ("/camera/color/top_view", Image, queue_size=1)
         
         rate = rospy.Rate(30)
+        
         while not rospy.is_shutdown():  
             if (self.lane_follower.waypoints is not None): 
                 # publish warped tresholded image
                 top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.birdsEyeImage.birds_image)
                 self.img_pub.publish(top_view_msg)
                 # publish Lane
+                self.tf_listener.waitForTransform("world", "base_link", rospy.Time.now(), rospy.Duration(4.0))
                 self.publisher.publish(self.makeLane(self.lane_follower.waypoints))
                 rate.sleep()
     
     # make a robocar_msgs.Lane from waypoints
     def makeLane(self, waypoints):
         msg = []
-
+        
         for i in range(len(waypoints)):
-            p = Waypoint()
-            p.pose.pose.position.x = float(waypoints[i][0])
-            p.pose.pose.position.y = float(waypoints[i][1])
-            p.pose.pose.position.z = float(0)
+            # make geometry_msgs/PoseStamped Message
+            p = PoseStamped()
+            p.pose.position.x = float(waypoints[i][0])
+            p.pose.position.y = float(waypoints[i][1])
+            p.pose.position.z = float(0)
             q = tf.transformations.quaternion_from_euler(0., 0., 0)
-            p.pose.pose.orientation = Quaternion(*q)
-            p.twist.twist.linear.x = float(self.velocity)
+            p.pose.orientation = Quaternion(*q)   
+            p.header.frame_id = "base_link"
+            p.header.stamp = rospy.Time()           
+            
+            new_point = Waypoint()
+            # apply transformation to a pose between 'base_link' and 'world' frames
+            new_point.pose = self.tf_listener.transformPose("world", p)
+            new_point.twist.twist.linear.x = float(self.velocity)
+            msg.append(new_point) 
 
-            msg.append(p) 
-
+        # form a Lane in a 'world' frame
         lane = Lane()
-        lane.header.frame_id = 'base_link'
-        lane.header.stamp = rospy.Time(0)
+        lane.header.frame_id = 'world'
+        lane.header.stamp = rospy.Time.now()
         lane.waypoints = msg
 
         return lane
