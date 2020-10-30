@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/>
+  <!-- <arg name="world_name" default="$(find robocar_world)/worlds/empty.world"/> -->
+  <arg name="world_name" default="$(find robocar_world)/worlds/straight_road.world"/>
   <arg name="simulation" default="1" />
 
   <include file="$(find robocar_main)/launch/components/controller.launch">

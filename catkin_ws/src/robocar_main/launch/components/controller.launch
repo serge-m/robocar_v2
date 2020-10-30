@@ -9,9 +9,9 @@
   <arg name="velocity" default="0.5"/>
   <node type="waypoint_publisher.py" pkg="waypoint_publisher" name="waypoint_publisher" output="screen">
     <param name="velocity" value="$(arg velocity)"/>
-    <!-- <param name="form" value="straight"/> -->
+    <param name="form" value="straight"/>
     <!-- <param name="form" value="45degree"/> -->
-    <param name="form" value="parabola"/>
+    <!-- <param name="form" value="parabola"/> -->
   </node>
 
   <!-- Pure Pursuit waypoint follower -->
