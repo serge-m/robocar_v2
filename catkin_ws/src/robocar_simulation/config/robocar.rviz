@@ -7,8 +7,9 @@ Panels:
         - /Global Options1
         - /Status1
         - /Marker2
+        - /Image1
       Splitter Ratio: 0.5
-    Tree Height: 528
+    Tree Height: 327
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -219,7 +220,7 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 846
+  Height: 1025
   Hide Left Dock: false
   Hide Right Dock: false
   Image:
