@@ -55,6 +55,10 @@
     <param name="publish_frequency" value="30.0"/>
   </node>
 
+  <!-- publish odometry in tf -->
+  <node name="odom_tf_publisher" pkg="mouse_odometry" type="odom_tf_node">
+  </node>
+
   <!-- publish arrow markers of steering and angular velocity for RVIZ -->
   <node name="marker_publisher" pkg="robocar_simulation" type="marker_publisher.py">
   </node>
