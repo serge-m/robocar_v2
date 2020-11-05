@@ -55,8 +55,10 @@ int main(int argc, char **argv)
 
   ROS_INFO("set subscriber...");
   // subscribe topic
-  ros::Subscriber waypoint_subscriber =
-      nh.subscribe("/base_waypoints", 10, &waypoint_follower::PurePursuit::callbackFromWayPoints, &pp);
+  ros::Subscriber base_waypoint_subscriber =
+      nh.subscribe("/waypoints/base", 10, &waypoint_follower::PurePursuit::callbackFromWayPoints, &pp);
+  ros::Subscriber update_waypoint_subscriber =
+      nh.subscribe("/waypoints/update", 10, &waypoint_follower::PurePursuit::callbackFromWayPoints, &pp);
   ros::Subscriber ndt_subscriber =
       nh.subscribe("robocar/odometry", 10, &waypoint_follower::PurePursuit::callbackFromCurrentPose, &pp);
   

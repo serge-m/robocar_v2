@@ -24,7 +24,7 @@ class FitPolynomialNode:
         self.bridge = CvBridge()
 
         self.subscriber = rospy.Subscriber("/top_view", Image, self.imageCallback, queue_size=1)
-        self.publisher = rospy.Publisher ("/update_waypoints", Lane, queue_size=1)
+        self.publisher = rospy.Publisher ("/waypoints/update", Lane, queue_size=1)
         rate = rospy.Rate(30)
         while not rospy.is_shutdown():
           
