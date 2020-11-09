@@ -4,6 +4,7 @@ import rospy
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point, TwistStamped
 from ackermann_msgs.msg import AckermannDriveStamped
+from robocar_msgs.msg import Lane, Waypoint
 
 # Node for publishing markers for RVIZ
 class MarkerPublisher(object):
@@ -14,6 +15,8 @@ class MarkerPublisher(object):
         self.publish_steering()
         # publish markers for target angular velocity
         self.publish_angular_velocity()
+        # publish lane waypoints
+        self.publish_waypoints()
         rospy.spin()
 
     def publish_steering(self):
@@ -23,7 +26,7 @@ class MarkerPublisher(object):
     def ackermann_cb(self, msg):
         steering = msg.drive.steering_angle
         # publish red arrow
-        self.publishMarker(steering, self.ack_pub, (1,0,0))
+        self.publishMarker(self.ack_pub, marker_type = "arrow", angle=steering, color=(1,0,0))
 
     def publish_angular_velocity(self):
         self.ang_pub = rospy.Publisher('/visualize/target_angular', Marker, queue_size=1)
@@ -32,18 +35,31 @@ class MarkerPublisher(object):
     def twist_cb(self, msg):
         angular_vel = msg.twist.angular.z
         # publish blue arrow
-        self.publishMarker(angular_vel, self.ang_pub, (0,0,1))
+        self.publishMarker(self.ang_pub, marker_type="arrow", angle=angular_vel, color=(0,0,1))
 
-    def publishMarker(self, angle, pub, color):
+    def publish_waypoints(self):
+        self.waypoint_pub = rospy.Publisher('/visualize/waypoints', Marker, queue_size=1)
+        self.waypoint_sub = rospy.Subscriber('/waypoints/update', Lane, self.waypoint_cb)
+
+    def waypoint_cb(self, msg):
+        waypoints = msg.waypoints
+        points = [x.pose.pose.position for x in waypoints]
+        self.publishMarker(self.waypoint_pub, marker_type="line", points=points, color=(0,1,0), frame="world")
+
+    def publishMarker(self, pub, marker_type, color, angle=0, points=None, frame="base_link"):
         marker = Marker()
-        marker.header.frame_id = "base_link"
+        marker.header.frame_id = frame
         marker.header.stamp = rospy.Time()
         marker.ns = "/"
-        marker.id = 0
-        marker.type = Marker.ARROW
-        marker.action = Marker.ADD
-        marker.points.append(Point(0, 0, 0.2))
-        marker.points.append(Point(math.cos(angle), math.sin(angle), 0.2))
+        marker.id = 0        
+        marker.action = Marker.ADD        
+        if (marker_type == "arrow"):
+            marker.type = Marker.ARROW
+            marker.points.append(Point(0, 0, 0))
+            marker.points.append(Point(math.cos(angle), math.sin(angle), 0))
+        else:
+            marker.type = Marker.LINE_STRIP
+            marker.points.extend(points)
         marker.scale.x = 0.02
         marker.scale.y = 0.05
         marker.scale.z = 0.1
