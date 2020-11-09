@@ -39,7 +39,7 @@ class BirdsEye:
         self.birds_image = np.zeros(self.birds_size)
 
     def warpPerspective(self, img):
-        self.birds_image = cv2.warpPerspective(img, self.transform, self.birds_size, flags=
+        self.birds_image = cv2.warpPerspective(np.copy(img), self.transform, self.birds_size, flags=
 				cv2.INTER_LINEAR+cv2.WARP_FILL_OUTLIERS+cv2.WARP_INVERSE_MAP)
 
 # class for treshold functions
@@ -76,13 +76,15 @@ class Treshold:
 
 # class for polynomial functions
 class FitPolynomial:
-    def __init__(self, s=100.0, nwindows=8, margin=100, minpix=50):
+    def __init__(self, s=100.0, nwindows=20, margin=30, minpix=50):
         # polynomials for left, right and center lines
         self.left_fit = None
         self.right_fit = None
         self.center_array = None
         # shape of an image
         self.shape = None
+        # image with drawn polygon between left and right lines
+        self.poly_img = None
         # scaling factor (in pixels/m)
         self.scale = s
         # HYPERPARAMETERS
@@ -95,7 +97,7 @@ class FitPolynomial:
 
     # get middle line points from left and right lane polynomials
     def get_waypoints(self):        
-        ploty = np.linspace(0, self.shape[0]-1, math.ceil(self.shape[0]/self.scale)+1)
+        ploty = np.linspace(0, self.shape[0]-1, math.ceil(self.shape[0]/10)+1)
         # if the image is empty - return a point straight ahead from the robocar
         if (np.count_nonzero(self.left_fit) == np.count_nonzero(self.right_fit) == 0):
             return np.array([[1, 0]])
@@ -122,16 +124,17 @@ class FitPolynomial:
         # print(center_array[1:])
         # save all points except the first, 
         # because it is almost near the car
-        self.center_array = center_array[1:]
+        self.center_array = center_array
 
-        return center_array[1:]
+        return center_array
 
     # return polynomial for both lanes
     # ym_per_pix, xm_per_pix - meters per pixel in x or y dimension
-    def fit_polynomial(self, treshold_warped, ym_per_pix=1, xm_per_pix=1):
+    def fit_polynomial(self, treshold_warped, draw=False, ym_per_pix=1, xm_per_pix=1):
         self.shape = treshold_warped.shape
+        self.poly_img = np.copy(treshold_warped)
         # Find our lane pixels first
-        leftx, lefty, rightx, righty = self.find_lane_pixels(treshold_warped)
+        leftx, lefty, rightx, righty = self.find_lane_pixels(draw)
         left_fit = [0,0,0]
         right_fit = [0,0,0]
         
@@ -144,10 +147,10 @@ class FitPolynomial:
         self.right_fit = right_fit
 
     # find lane pixels in image with sliding windows
-    def find_lane_pixels(self, img):
-        treshold_warped = img[:,:,0]
+    def find_lane_pixels(self, draw=False):
+        treshold_warped = self.poly_img[:,:,0]
         # Take a histogram of the bottom half of the image
-        histogram = np.sum(treshold_warped[treshold_warped.shape[0]//2:,:], axis=0)
+        histogram = np.sum(treshold_warped[3*treshold_warped.shape[0]//4:,:], axis=0)
         # if the image is empty
         if (np.amax(histogram) < 10):
             leftx = lefty = rightx = righty = np.array([])
@@ -183,6 +186,13 @@ class FitPolynomial:
                 win_xright_low = rightx_current - self.margin  # Update this
                 win_xright_high = rightx_current + self.margin  # Update this       
                 
+                # draw window rectangles
+                if draw:
+                    cv2.rectangle(self.poly_img,(win_xleft_low,win_y_low),
+                    (win_xleft_high,win_y_high),(0,255,0), 2) 
+                    cv2.rectangle(self.poly_img,(win_xright_low,win_y_low),
+                    (win_xright_high,win_y_high),(0,255,0), 2)  
+
                 # Identify the nonzero pixels in x and y within the window 
                 good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
                 (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
@@ -213,3 +223,27 @@ class FitPolynomial:
             righty = nonzeroy[right_lane_inds]
     
         return leftx, lefty, rightx, righty
+
+    # draw a green polygon between two lanes
+    def draw_filled_polygon(self):
+        ploty, left_fitx, right_fitx = self.get_xy()
+        
+        all_x = np.concatenate([left_fitx, np.flip(right_fitx, 0)])
+        all_y = np.concatenate([ploty, np.flip(ploty, 0)])
+        all_points = [(np.asarray([all_x, all_y]).T).astype(np.int32)]
+        cv2.fillPoly(self.poly_img, all_points, (0,255,0))
+        
+        return self.poly_img
+    
+    def get_xy(self):
+        ploty = np.linspace(0, self.shape[0]-1, self.shape[0] )
+        try:
+            left_fitx = self.left_fit[0]*ploty**2 + self.left_fit[1]*ploty + self.left_fit[2]
+            right_fitx = self.right_fit[0]*ploty**2 + self.right_fit[1]*ploty + self.right_fit[2]
+        except TypeError:
+            # Avoids an error if `left` and `right_fit` are still none or incorrect
+            print('The function failed to fit a line!')
+            left_fitx = 1*ploty**2 + 1*ploty
+            right_fitx = 1*ploty**2 + 1*ploty
+            
+        return ploty, left_fitx, right_fitx
