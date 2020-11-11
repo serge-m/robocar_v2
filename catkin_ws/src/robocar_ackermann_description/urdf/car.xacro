@@ -335,7 +335,8 @@ limitations under the License.
         <cameraName>camera</cameraName>
         <imageTopicName>color/image_raw</imageTopicName>
         <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
-        <frameName>camera</frameName>
+        <!-- camera frame with Z forward -->
+        <frameName>camera_link_optical</frameName>
         <!-- 286. TODO camera matrix as in file, two numbers left-->
         <focalLength>944.023585</focalLength>
         <CxPrime>641.408166</CxPrime>
@@ -372,7 +373,7 @@ limitations under the License.
     </collision>
 
     <visual name='camera_visual'>
-      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <box size="0.05 0.05 0.05"/>
       </geometry>
@@ -383,8 +384,25 @@ limitations under the License.
     <origin xyz="0.2 0 ${0.36}" rpy="0 0 0"/>
     <child link="camera"/>
     <parent link="chassis"/>
-    <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
+
+  <!-- generate an optical frame 
+      http://www.ros.org/reps/rep-0103.html#suffix-frames
+      so that ros and opencv can operate on the camera frame correctly 
+      -->
+  <joint name="camera_optical_joint" type="fixed">
+    <!-- these values have to be these values otherwise the gazebo camera
+        image won't be aligned properly with the frame it is supposedly
+        originating from -->
+    <origin xyz="0 0 0" rpy="${-degrees_90} 0 ${-degrees_90}"/>
+    <parent link="camera"/>
+    <child link="camera_link_optical"/>
+  </joint>
+
+  <link name="camera_link_optical">
+  </link>
+
+
   <!-- CAMERA END -->
 
 
