@@ -1,0 +1,15 @@
+<launch>
+
+  <arg name="model" default="$(find robocar_ackermann_description)/urdf/car.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+ 
+  <!-- publish link states in tf -->
+  <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="publish_frequency" value="30.0"/>
+  </node>
+
+  <!-- node with tests -->
+  <node type="test_camera_node.py" pkg="lane_follow" name="test_camera_node" output="screen">
+  </node>
+
+</launch>

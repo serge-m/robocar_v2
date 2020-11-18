@@ -98,6 +98,7 @@ class LaneFollowNode:
 
     def info_cb(self, msg):
         c, f = self.getCameraParams(msg)
+        # camera_info_manager.saveCalibration(msg, "package://robocar_simulation/config/sim_camera_calibration.yaml", "camera")
         self.lane_follower.setCameraInfo(c, f)
 
     def img_cb(self, data):

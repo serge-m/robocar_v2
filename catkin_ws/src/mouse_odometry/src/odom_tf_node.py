@@ -6,7 +6,7 @@ import rospy
 import tf
 
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Quaternion
 
 def tf_pub_cb(msg):
     br = tf.TransformBroadcaster()
@@ -17,7 +17,8 @@ def tf_pub_cb(msg):
 
     odom_trans.transform.translation.x = msg.pose.pose.position.x
     odom_trans.transform.translation.y = msg.pose.pose.position.y
-    odom_trans.transform.translation.z = 0.0
+    # TODO make this dependant from urdf file with car description
+    odom_trans.transform.translation.z = 0.092
     
     odom_trans.transform.rotation = msg.pose.pose.orientation
 
