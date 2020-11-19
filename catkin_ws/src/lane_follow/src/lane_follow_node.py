@@ -59,7 +59,7 @@ class LaneFollowNode:
         while not rospy.is_shutdown():  
             if (self.lane_follower.waypoints is not None): 
                 # publish warped tresholded image
-                top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.birdsEyeImage.birds_image)
+                top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.image_proc.birds_image)
                 self.img_pub.publish(top_view_msg)
                 # publish Lane
                 # self.tf_listener.waitForTransform("world", "base_link", rospy.Time.now(), rospy.Duration(4.0))

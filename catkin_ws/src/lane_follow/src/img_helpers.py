@@ -3,49 +3,48 @@ import numpy as np
 import cv2
 import math
 
-# Class for perspective transformation of an image
-class BirdsEye:
-    # F = (fx, fy) - focal length (in pixels)
-    # C = (cx, cy) - coordinates of optical center of the camera (in pixels)
-    # H, theta - Camera position (in metres, radians)
-    # Defining desired field-of-view (in metres)
-    # O = (Ox, Oy) is the position of the projection of the optical center on the 
-    # ground plane from (0, 0) of the top-view image
-    # W = (Wx, Wy) are the width and height of the top-view image
-    # x-axis is the direction pointing right in the top-view image
-    # y-axis is the direction pointing down in the top-view image
-    # s - Scaling factor (in pixels/m)
-    # (Use 80.0 for realtime low-res output but 160.0 for datasets)
-    def __init__(self, F, C, H, theta, O, W, s):
-      
-        self.transform = np.zeros((3,3))
-        # Calculating transformation matrix analytically
-        self.transform[0][0] = F[0]
-        self.transform[0][1] = -C[0]*math.cos(theta)
-        self.transform[0][2] = s*(C[0]*(H*math.sin(theta)+O[1]*math.cos(theta)) - O[0]*F[0])
+# class for processing images:
+# - top-view perspective transformation
+# - gradient and color tresholds
+# - finding lane lines and fitting polynomials
+# - getting waypoints from middle line in the base_link frame in meters
+class ImageProcessor:
+    def __init__(self, nwindows=20, margin=50, minpix=50):
+        # transformation matrix for 
+        # (un)wraping images to top-view projection
+        self.transformMatrix = None
+        # top-view image
+        self.birds_image = None
+        # tresholded image
+        self.treshold_image = None
+        # polynomials for left, right and center lines
+        self.left_fit = None
+        self.right_fit = None
+        self.center_array = None
+        # shape of an image
+        self.shape = None
+        # image with drawn polygon between left and right lines
+        self.poly_img = None
+        # HYPERPARAMETERS
+        # Choose the number of sliding windows
+        self.nwindows = nwindows
+        # Set the width of the windows +/- margin
+        self.margin = margin
+        # Set minimum number of pixels found to recenter window
+        self.minpix = minpix
 
-        self.transform[1][0] = 0
-        self.transform[1][1] = F[1]*math.sin(theta) - C[1]*math.cos(theta)
-        self.transform[1][2] = s*(C[1]*(H*math.sin(theta)+O[1]*math.cos(theta)) + F[1]*(H*math.cos(theta)-O[1]*math.sin(theta)))
+    def get_transform_matrix(self, src, dst):
+        self.transformMatrix = cv2.getPerspectiveTransform(src, dst) 
 
-        self.transform[2][0] = 0
-        self.transform[2][1] = -math.cos(theta)
-        self.transform[2][2] = s*(H*math.sin(theta) + O[1]*math.cos(theta))
+    # get_transform_matrix(src, dst) should be called before
+    def warp_perspective(self, img):
+        h, w = img.shape[0], img.shape[1]
+        if (self.transformMatrix is None):
+            print("src and dst points for tranformation should be defined")
+        else:
+            self.birds_image = cv2.warpPerspective(np.copy(img), self.transformMatrix, (w, h))
+        return self.birds_image
 
-        # Normalizing transformation matrix
-        self.transform = self.transform/self.transform[2][2]
-       
-        self.birds_size = (int(s*W[0]), int(s*W[1]))
-        self.birds_image = np.zeros(self.birds_size)
-
-    def warpPerspective(self, img):
-        self.birds_image = cv2.warpPerspective(np.copy(img), self.transform, self.birds_size, flags=
-				cv2.INTER_LINEAR+cv2.WARP_FILL_OUTLIERS+cv2.WARP_INVERSE_MAP)
-
-# class for treshold functions
-class Treshold:
-    def __init__(self):
-        self.image = None
     # Gradient and color tresholds
     def treshold_binary(self, image, s_thresh=(200, 255), sx_thresh=(20, 90)):
         # Convert to HLS color space and separate the V channel
@@ -70,44 +69,18 @@ class Treshold:
         combined_binary[(s_binary == 1) | (sxbinary == 1)] = 1
 
         binary = np.dstack((combined_binary, combined_binary, combined_binary)) * 255
-        self.image = binary
+        self.treshold_image = binary
 
         return binary
 
-# class for polynomial functions
-class FitPolynomial:
-    def __init__(self, s=100.0, nwindows=20, margin=30, minpix=50):
-        # polynomials for left, right and center lines
-        self.left_fit = None
-        self.right_fit = None
-        self.center_array = None
-        # shape of an image
-        self.shape = None
-        # image with drawn polygon between left and right lines
-        self.poly_img = None
-        # scaling factor (in pixels/m)
-        self.scale = s
-        # HYPERPARAMETERS
-        # Choose the number of sliding windows
-        self.nwindows = nwindows
-        # Set the width of the windows +/- margin
-        self.margin = margin
-        # Set minimum number of pixels found to recenter window
-        self.minpix = minpix
-
     # get middle line points from left and right lane polynomials
     def get_waypoints(self):        
-        ploty = np.linspace(0, self.shape[0]-1, math.ceil(self.shape[0]/10)+1)
         # if the image is empty - return a point straight ahead from the robocar
         if (np.count_nonzero(self.left_fit) == np.count_nonzero(self.right_fit) == 0):
             return np.array([[1, 0]])
-        try:
-            left_fitx = self.left_fit[0]*ploty**2 + self.left_fit[1]*ploty + self.left_fit[2]
-            right_fitx = self.right_fit[0]*ploty**2 + self.right_fit[1]*ploty + self.right_fit[2]
-        except TypeError:
-            # Avoids an error if `left` and `right_fit` are still none or incorrect
-            left_fitx = 1*ploty**2 + 1*ploty
-            right_fitx = 1*ploty**2 + 1*ploty
+        
+        ploty, left_fitx, right_fitx = self.get_xy(math.ceil(self.shape[0]/10)+1)
+        
         middle_fitx = (left_fitx + right_fitx) / 2
         # print(middle_fitx)
         center_array = np.column_stack((np.flip(middle_fitx, 0), ploty))
@@ -117,13 +90,10 @@ class FitPolynomial:
         # print(center_array)
         # divide by scaling parameters in x and y directions
         # to find coodrinates in required units and required sign
-        center_array[:, 0]/= -self.scale
-        center_array[:, 1]/= self.scale
+        center_array[:, 0]/= -1
         # print(center_array)
         center_array[:,[0, 1]] = center_array[:,[1, 0]]
         # print(center_array[1:])
-        # save all points except the first, 
-        # because it is almost near the car
         self.center_array = center_array
 
         return center_array
@@ -138,19 +108,21 @@ class FitPolynomial:
         left_fit = [0,0,0]
         right_fit = [0,0,0]
         
+        
         # check if the image is not empty
         if (leftx.size > 0 and lefty.size > 0 and rightx.size > 0 and righty.size > 0):
             left_fit = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
             right_fit = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)      
-
         self.left_fit = left_fit
         self.right_fit = right_fit
+
+        return self.left_fit, self.right_fit, self.poly_img
 
     # find lane pixels in image with sliding windows
     def find_lane_pixels(self, draw=False):
         treshold_warped = self.poly_img[:,:,0]
         # Take a histogram of the bottom half of the image
-        histogram = np.sum(treshold_warped[3*treshold_warped.shape[0]//4:,:], axis=0)
+        histogram = np.sum(treshold_warped[treshold_warped.shape[0]//2:,:], axis=0)
         # if the image is empty
         if (np.amax(histogram) < 10):
             leftx = lefty = rightx = righty = np.array([])
@@ -226,7 +198,7 @@ class FitPolynomial:
 
     # draw a green polygon between two lanes
     def draw_filled_polygon(self):
-        ploty, left_fitx, right_fitx = self.get_xy()
+        ploty, left_fitx, right_fitx = self.get_xy(self.shape[0])
         
         all_x = np.concatenate([left_fitx, np.flip(right_fitx, 0)])
         all_y = np.concatenate([ploty, np.flip(ploty, 0)])
@@ -235,8 +207,8 @@ class FitPolynomial:
         
         return self.poly_img
     
-    def get_xy(self):
-        ploty = np.linspace(0, self.shape[0]-1, self.shape[0] )
+    def get_xy(self, num_points):
+        ploty = np.linspace(0, self.shape[0]-1, num_points)
         try:
             left_fitx = self.left_fit[0]*ploty**2 + self.left_fit[1]*ploty + self.left_fit[2]
             right_fitx = self.right_fit[0]*ploty**2 + self.right_fit[1]*ploty + self.right_fit[2]

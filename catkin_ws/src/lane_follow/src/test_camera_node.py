@@ -63,7 +63,7 @@ class TestCameraNode:
                 # distance in meters between points
                 print(float(point1.distance(point2)))
                 # translate factor depends on h*w of the image
-                t = 720*float(point1.distance(point2))/1280
+                t = 720*float(point1.distance(point2))/1280*2
                 print("translate factor in meters ", t)
                 # upper points in the base_link frame
                 point3 = point1.translate(t)
