@@ -390,10 +390,7 @@ limitations under the License.
       http://www.ros.org/reps/rep-0103.html#suffix-frames
       so that ros and opencv can operate on the camera frame correctly 
       -->
-  <joint name="camera_optical_joint" type="fixed">
-    <!-- these values have to be these values otherwise the gazebo camera
-        image won't be aligned properly with the frame it is supposedly
-        originating from -->
+  <joint name="camera_optical_joint" type="fixed">   
     <origin xyz="0 0 0" rpy="${-degrees_90} 0 ${-degrees_90}"/>
     <parent link="camera"/>
     <child link="camera_link_optical"/>

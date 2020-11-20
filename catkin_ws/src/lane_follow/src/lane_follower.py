@@ -42,10 +42,10 @@ class LaneFollower:
 
         treshold_image = self.image_proc.treshold_binary(image)
 
-        h, w = image.shape[0], image.shape[1]         
-        src = np.float32([[387, 525],[894, 525],[w, h],[0, h]])
-        dst = np.float32([[0, 0],[w, 0],[w, h],[0, h]])
-        self.image_proc.get_transform_matrix(src, dst)
+        # h, w = image.shape[0], image.shape[1]         
+        # src = np.float32([[387, 525],[894, 525],[w, h],[0, h]])
+        # dst = np.float32([[0, 0],[w, 0],[w, h],[0, h]])
+        # self.image_proc.get_transform_matrix(src, dst)
 
         birds_image = self.image_proc.warp_perspective(treshold_image)
         

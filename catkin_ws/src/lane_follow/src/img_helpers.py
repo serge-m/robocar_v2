@@ -2,6 +2,38 @@
 import numpy as np
 import cv2
 import math
+from sympy import Point3D, Line3D, Plane 
+
+# get upper src points in the base_link frame
+# transformed points are used in 
+# ImageProcessor.get_transform_matrix(src, dst)
+# for (un)wrapping image into top-view perspective.
+# All points are in the base_link frame
+# zero - camera center
+# lbc - ray which goes from center and left bottom corner of the image
+# rbc - ray which goes from center and right bottom corner of the image
+# xoy - any point which lay on the ground
+# scale - scale factor, equals to x*h/w, 
+#         where h and w are image height and width;
+#         x - how big is the squeeze of the image
+def getUpperPoints(zero, lbc, rbc, xoy, scale):
+    # make two lines from camera center
+    lbc_line = Line3D(Point3D(zero), Point3D(lbc))
+    rbc_line = Line3D(Point3D(zero), Point3D(rbc))
+    # ground plane with lanes
+    xy_plane = Plane(Point3D(xoy), normal_vector=(0, 0, 1))
+    # bottom points in the base_link frame
+    # are intersection points of lines and ground plane
+    point1 = xy_plane.intersection(lbc_line)[0]
+    point2 = xy_plane.intersection(rbc_line)[0]
+    # translate factor in meters
+    # depends on h*w of the image
+    # and scale factor
+    t = float(point1.distance(point2))*scale
+    # upper points in the base_link frame
+    point3 = point1.translate(t)
+    point4 = point2.translate(t)
+    return point3, point4
 
 # class for processing images:
 # - top-view perspective transformation
