@@ -25,7 +25,7 @@ class LaneFollower:
         # self.theta = pitch 
 
     def __call__(self, image):
-        waypoints = [[1, 0]]
+        waypoints = [[1, 0, 0]]
         # if (self.birdsEyeImage is None) and self.F and self.C and self.H:
         #     self.birdsEyeImage = BirdsEye(self.F, self.C, self.H, self.theta, self.O, self.W, self.S)            
             
@@ -39,19 +39,19 @@ class LaneFollower:
         #             self.waypoints = self.FitPolynomial.get_waypoints() 
 
 
+        if (self.image_proc.transformMatrix is not None):
+            treshold_image = self.image_proc.treshold_binary(image)
 
-        treshold_image = self.image_proc.treshold_binary(image)
+            # h, w = image.shape[0], image.shape[1]         
+            # src = np.float32([[387, 525],[894, 525],[w, h],[0, h]])
+            # dst = np.float32([[0, 0],[w, 0],[w, h],[0, h]])
+            # self.image_proc.get_transform_matrix(src, dst)
 
-        # h, w = image.shape[0], image.shape[1]         
-        # src = np.float32([[387, 525],[894, 525],[w, h],[0, h]])
-        # dst = np.float32([[0, 0],[w, 0],[w, h],[0, h]])
-        # self.image_proc.get_transform_matrix(src, dst)
-
-        birds_image = self.image_proc.warp_perspective(treshold_image)
-        
-        left_fit, right_fit, poly_img = self.image_proc.fit_polynomial(birds_image)
-        
-        self.waypoints = self.image_proc.get_waypoints()    
+            birds_image = self.image_proc.warp_perspective(treshold_image)
+            
+            left_fit, right_fit, poly_img = self.image_proc.fit_polynomial(birds_image)
+            
+            self.waypoints = self.image_proc.get_waypoints()    
 
         return self.waypoints
 

@@ -66,7 +66,7 @@ class ImageProcessor:
         self.minpix = minpix
 
     def get_transform_matrix(self, src, dst):
-        self.transformMatrix = cv2.getPerspectiveTransform(src, dst) 
+        self.transformMatrix = cv2.getPerspectiveTransform(np.float32(src), np.float32(dst)) 
 
     # get_transform_matrix(src, dst) should be called before
     def warp_perspective(self, img):
@@ -109,22 +109,25 @@ class ImageProcessor:
     def get_waypoints(self):        
         # if the image is empty - return a point straight ahead from the robocar
         if (np.count_nonzero(self.left_fit) == np.count_nonzero(self.right_fit) == 0):
-            return np.array([[1, 0]])
+            return np.array([[1, 0, 0]])
         
         ploty, left_fitx, right_fitx = self.get_xy(math.ceil(self.shape[0]/10)+1)
         
         middle_fitx = (left_fitx + right_fitx) / 2
         # print(middle_fitx)
-        center_array = np.column_stack((np.flip(middle_fitx, 0), ploty))
+        # center_array = np.column_stack((np.flip(middle_fitx, 0), ploty, np.zeros_like(ploty))
         # print(center_array)
         # substract img.width/2 to find deviation from center line
-        center_array[:, 0]-= int(self.shape[1] / 2)
+        # center_array[:, 0]-= int(self.shape[1] / 2)
+        middle_fitx-= int(self.shape[1] / 2)
         # print(center_array)
         # divide by scaling parameters in x and y directions
         # to find coodrinates in required units and required sign
-        center_array[:, 0]/= -1
+        # center_array[:, 0]/= -1
+        middle_fitx/= -1
         # print(center_array)
-        center_array[:,[0, 1]] = center_array[:,[1, 0]]
+        # center_array[:,[0, 1]] = center_array[:,[1, 0]]
+        center_array = np.column_stack((ploty, np.flip(middle_fitx, 0), np.zeros_like(ploty)))        
         # print(center_array[1:])
         self.center_array = center_array
 

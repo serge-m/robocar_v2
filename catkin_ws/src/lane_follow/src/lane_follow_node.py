@@ -27,8 +27,9 @@ class LaneFollowNode:
         self.velocity = rospy.get_param('~velocity')
 
         # load sensor_msgs/CameraInfo Message from yaml file if it exists
-        file_camera_params = rospy.get_param('~camera_params')
-        self.cam_info_mng = camera_info_manager.CameraInfoManager(cname='narrow_stereo', url=file_camera_params)
+        # file_camera_params = rospy.get_param('~camera_params')
+        file_camera_params = "package://robocar_simulation/config/sim_camera_calibration.yaml"
+        self.cam_info_mng = camera_info_manager.CameraInfoManager(cname='camera', url=file_camera_params)
         self.cam_info_mng.loadCameraInfo()
         # if there is no yaml file msg is equal to null, no error msg
         camera_info_msg = self.cam_info_mng.getCameraInfo()              
@@ -92,22 +93,26 @@ class LaneFollowNode:
                     # right upper corner        
                     ruc = self.camera_model.project3dToPixel(ruc_point)
                     # form src and dst points
-                    src = [[luc],[ruc],[w, h],[0, h]]
+                    src = [[luc[0], luc[1]],[ruc[0], ruc[1]],[w, h],[0, h]]
                     dst = [[0, 0],[w, 0],[w, h],[0, h]]
                     # get matrix for perspective transformation
-                    self.lane_follower.image_proc.get_transform_matrix(src, dst)
+                    if (src and dst):
+                        self.lane_follower.image_proc.get_transform_matrix(src, dst)
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                     continue
 
                 
             if (self.lane_follower.waypoints is not None): 
+                try:
                 # publish warped tresholded image
-                top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.image_proc.birds_image)
-                self.img_pub.publish(top_view_msg)
+                # top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.image_proc.birds_image)
+                # self.img_pub.publish(top_view_msg)
                 # publish Lane
                 # self.tf_listener.waitForTransform("world", "base_link", rospy.Time.now(), rospy.Duration(4.0))
-                self.publisher.publish(self.makeLane(self.lane_follower.waypoints))
-                rate.sleep()
+                    self.publisher.publish(self.makeLane(self.lane_follower.waypoints))
+                    rate.sleep()
+                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                    continue
     
     # make a robocar_msgs.Lane from waypoints
     def makeLane(self, waypoints):
@@ -151,7 +156,7 @@ class LaneFollowNode:
         self.camera_model.fromCameraInfo(msg)
         # TODO test if there is no calibration file
         if not self.cam_info_mng.getCameraInfo():
-            self.cam_info_mng.saveCalibration(msg, file_camera_params, 'narrow_stereo')
+            self.cam_info_mng.saveCalibration(msg, file_camera_params, 'camera')
             self.cam_info_mng.loadCameraInfo()
             
     def img_cb(self, data):

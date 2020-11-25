@@ -68,7 +68,7 @@
   </node>
 
   <!-- publish new waypoints for following the lane -->
-  <arg name="camera_params" default="$(find robocar_config)/camera_calibration.yaml"/>
+  <arg name="camera_params" default="$(find robocar_simulation)/config/sim_camera_calibration.yaml"/>
   <arg name="velocity" default="0.5"/>
   <node type="lane_follow_node" pkg="lane_follow" name="lane_follow_node" output="screen">
     <param name="camera_params" value="$(arg camera_params)"/>
