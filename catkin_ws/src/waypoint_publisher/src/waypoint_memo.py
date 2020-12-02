@@ -16,6 +16,7 @@ class WaypointMemo(object):
         self.pub = rospy.Publisher('/waypoints', PoseArray, queue_size=1)
         self.sub = rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.add_waypoint, queue_size=1)
         self.frame_id = rospy.get_param('~frame_id', 'base_link')
+        self.timeout = rospy.Duration.from_sec(float(rospy.get_param('~expiration_time', 3.0)))
         self.cur_waypoint_id = 0
         self.waypoints = OrderedDict()
 
@@ -30,16 +31,24 @@ class WaypointMemo(object):
 
     def _create_pose_array(self):
         msg = PoseArray()
-        msg.header.stamp = rospy.Time.now()
+        now = rospy.Time.now()
+        msg.header.stamp = now
         msg.header.frame_id = self.frame_id
-        msg.poses = list(self.waypoints.values())
+        msg.poses = [stamped_pose.pose for stamped_pose in self.waypoints.values()
+                     if now - stamped_pose.header.stamp < self.timeout]
         return msg
 
     def add_waypoint(self, msg):
         """
         :type msg: PoseStamped
         """
-        self.waypoints[self.cur_waypoint_id] = msg.pose
+        now = rospy.Time.now()
+        self.waypoints = OrderedDict(
+            (k, v) for k, v in self.waypoints.items()
+            if v.header.stamp if now - v.header.stamp < self.timeout
+        )
+        self.waypoints[self.cur_waypoint_id] = msg
+
         self.cur_waypoint_id += 1
 
 
