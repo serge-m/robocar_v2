@@ -21,4 +21,7 @@
   <arg name="rvizconfig" default="$(find robocar_main)/rviz/robocar.rviz" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
+  <node name="waypoint_memo" pkg="waypoint_publisher" type="waypoint_memo.py" output="screen">
+  </node>
+
 </launch>
