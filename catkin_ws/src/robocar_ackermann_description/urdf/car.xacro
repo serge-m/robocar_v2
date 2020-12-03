@@ -402,6 +402,14 @@ limitations under the License.
 
   <!-- CAMERA END -->
 
+  <!-- projection of base_link to the ground -->
+  <link name="base_bottom_link">    
+  </link>
+  <joint type="fixed" name="base_to_bottom_joint">
+    <origin xyz="0 0 ${(chassis_height + wheel_travel + tire_dia) / 2}" rpy="0 0 0"/>
+    <child link="base_link"/>
+    <parent link="base_bottom_link"/>
+  </joint>
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
@@ -412,7 +420,7 @@ limitations under the License.
       <bodyName>base_link</bodyName>
       <topicName>robocar/odometry</topicName>
       <gaussianNoise>0.01</gaussianNoise>
-      <frameName>world</frameName>
+      <frameName>base_link</frameName>
       <xyzOffsets>0 0 0</xyzOffsets>
       <rpyOffsets>0 0 0</rpyOffsets>
     </plugin>

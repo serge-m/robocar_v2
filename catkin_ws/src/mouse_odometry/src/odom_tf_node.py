@@ -13,12 +13,12 @@ def tf_pub_cb(msg):
     odom_trans = TransformStamped()
     odom_trans.header.stamp = rospy.Time.now()
     odom_trans.header.frame_id = "world"
-    odom_trans.child_frame_id = "base_link"
+    odom_trans.child_frame_id = "base_bottom_link"
 
     odom_trans.transform.translation.x = msg.pose.pose.position.x
     odom_trans.transform.translation.y = msg.pose.pose.position.y
     # TODO make this dependant from urdf file with car description
-    odom_trans.transform.translation.z = 0.092
+    odom_trans.transform.translation.z = 0
     
     odom_trans.transform.rotation = msg.pose.pose.orientation
 
