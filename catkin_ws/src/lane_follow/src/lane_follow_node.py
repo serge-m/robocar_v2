@@ -41,16 +41,7 @@ class LaneFollowNode:
                 
         # get camera position (in metres, degrees) from tf topic
         self.tf_listener = tf.TransformListener()
-        # try:
-        #     # wait a little bit for transfrormation from base frame to camera frame
-        #     self.tf_listener.waitForTransform("base_link", "camera", rospy.Time(0), rospy.Duration(4.0))
-        #     (trans, rot) = self.tf_listener.lookupTransform("base_link", "camera", rospy.Time(0))
-        #     (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
-        #     # set camera position in LaneFollower
-        #     self.lane_follower.setCameraPos(trans[2], pitch)
-        # except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-        #     print('tf error-------------------')
-
+        
         # get all parameters from sensor_msgs/CameraInfo Message
         self.camera_info_sub = rospy.Subscriber("/camera/color/camera_info", CameraInfo, self.info_cb,  queue_size=1)
         
@@ -67,57 +58,50 @@ class LaneFollowNode:
             # TODO test for null values 
             # if it is true - camera model is loaded
             if self.cameraInfoSet and (not self.hasTransformMatrix):
-                # try:
-                #     # find src and dst points for 
-                #     # LaneFollower.image_proc.get_transform_matrix(src, dst)
-                #     # it is done here because points 
-                #     # should be transformed between frames
-                #     h = self.cam_info_mng.getCameraInfo().height
-                #     w = self.cam_info_mng.getCameraInfo().width
-                #     # left bottom corner        
-                #     lbc_ray = self.camera_model.projectPixelTo3dRay((0, h))
-                #     # right bottom corner        
-                #     rbc_ray = self.camera_model.projectPixelTo3dRay((w, h))
-                #     # camera center and bottom points in the base_bottom_link frame
-                #     zero = self.get_point_xyz(self.transformPoint((0,0,0), "camera_link_optical", "base_bottom_link"))
-                #     lbc_point = self.get_point_xyz(self.transformPoint(lbc_ray, "camera_link_optical", "base_bottom_link"))
-                #     rbc_point = self.get_point_xyz(self.transformPoint(rbc_ray, "camera_link_optical", "base_bottom_link"))
-                #     # ground plane in the base_bottom_link frame
-                #     xoy = (0, 0, 0)
-                #     scale = 2*h/w
-                #     point3, point4 = getUpperPoints(zero, lbc_point, rbc_point, xoy, scale)
-                #     # transform points 3 and 4 to camera_optical_link frame
-                #     luc_point = self.get_point_xyz(self.transformPoint(point3, "base_bottom_link", "camera_link_optical"))
-                #     ruc_point = self.get_point_xyz(self.transformPoint(point4, "base_bottom_link", "camera_link_optical"))
-                #     # pixel coordinates of these points:
-                #     # left upper corner 
-                #     luc = self.camera_model.project3dToPixel(luc_point)
-                #     # right upper corner        
-                #     ruc = self.camera_model.project3dToPixel(ruc_point)
-                #     # form src and dst points
-                #     src = [[luc[0], luc[1]],[ruc[0], ruc[1]],[w, h],[0, h]]
-                #     dst = [[0, 0],[w, 0],[w, h],[0, h]]
-                #     # get matrix for perspective transformation
-                #     if (src and dst):
-                #         self.lane_follower.image_proc.get_transform_matrix(src, dst)
-                #         self.hasTransformMatrix = True
-                # except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                #     continue
-                h = self.cam_info_mng.getCameraInfo().height
-                w = self.cam_info_mng.getCameraInfo().width        
-                src = [[387, 525],[894, 525],[w, h],[0, h]]
-                dst = [[0, 0],[w, 0],[w, h],[0, h]]
-                self.lane_follower.image_proc.get_transform_matrix(src, dst)
-                self.hasTransformMatrix = True
-
+                try:
+                    # find src and dst points for 
+                    # LaneFollower.image_proc.get_transform_matrix(src, dst)
+                    # it is done here because points 
+                    # should be transformed between frames with tfTransformer
+                    h = self.cam_info_mng.getCameraInfo().height
+                    w = self.cam_info_mng.getCameraInfo().width
+                    # left bottom corner        
+                    lbc_ray = self.camera_model.projectPixelTo3dRay((0, h))
+                    # right bottom corner        
+                    rbc_ray = self.camera_model.projectPixelTo3dRay((w, h))
+                    # camera center and bottom points in the base_bottom_link frame
+                    zero = self.get_point_xyz(self.transformPoint((0,0,0), "camera_link_optical", "base_bottom_link"))
+                    lbc_point = self.get_point_xyz(self.transformPoint(lbc_ray, "camera_link_optical", "base_bottom_link"))
+                    rbc_point = self.get_point_xyz(self.transformPoint(rbc_ray, "camera_link_optical", "base_bottom_link"))
+                    # ground plane in the base_bottom_link frame
+                    xoy = (0, 0, 0)
+                    scale = 2*h/w
+                    point3, point4 = getUpperPoints(zero, lbc_point, rbc_point, xoy, scale)
+                    # transform points 3 and 4 to camera_optical_link frame
+                    luc_point = self.get_point_xyz(self.transformPoint(point3, "base_bottom_link", "camera_link_optical"))
+                    ruc_point = self.get_point_xyz(self.transformPoint(point4, "base_bottom_link", "camera_link_optical"))
+                    # pixel coordinates of these points:
+                    # left upper corner 
+                    luc = self.camera_model.project3dToPixel(luc_point)
+                    # right upper corner        
+                    ruc = self.camera_model.project3dToPixel(ruc_point)
+                    # form src and dst points
+                    src = [[luc[0], luc[1]],[ruc[0], ruc[1]],[w, h],[0, h]]
+                    dst = [[0, 0],[w, 0],[w, h],[0, h]]
+                    # get matrix for perspective transformation
+                    if (src and dst):
+                        self.lane_follower.image_proc.get_transform_matrix(src, dst)
+                        self.hasTransformMatrix = True
+                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                    continue
                 
             if self.canTransformImg: 
                 try:
-                # publish warped tresholded image
-                # top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.image_proc.birds_image)
-                # self.img_pub.publish(top_view_msg)
-                # publish Lane
-                # self.tf_listener.waitForTransform("world", "base_link", rospy.Time.now(), rospy.Duration(4.0))
+                    # publish warped tresholded image
+                    top_view_msg = self.bridge.cv2_to_imgmsg(self.lane_follower.image_proc.birds_image)
+                    self.img_pub.publish(top_view_msg)
+                    # publish Lane
+                    # self.tf_listener.waitForTransform("world", "base_link", rospy.Time.now(), rospy.Duration(4.0))
                     self.publisher.publish(self.makeLane(self.lane_follower.waypoints))
                     rate.sleep()
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -129,8 +113,8 @@ class LaneFollowNode:
         
         for i in range(len(waypoints)):
             new_point = Waypoint()
-            # apply transformation to a pose between 'base_link' and 'world' frames
-            new_point.pose = self.transformPoint(waypoints[i], "base_link", "world")
+            # apply transformation to a pose between 'base_bottom_link' and 'world' frames
+            new_point.pose = self.transformPoint(waypoints[i], "base_bottom_link", "world")
             new_point.twist.twist.linear.x = float(self.velocity)
             msg.append(new_point) 
 

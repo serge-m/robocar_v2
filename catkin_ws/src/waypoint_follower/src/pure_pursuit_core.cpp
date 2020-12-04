@@ -360,13 +360,13 @@ geometry_msgs::TwistStamped PurePursuit::go()
 {
   if(!pose_set_ || !waypoint_set_ || !velocity_set_){
     if(!pose_set_) {
-       ROS_WARN("position is missing");
+      //  ROS_WARN("position is missing");
      }
      if(!waypoint_set_) {
-       ROS_WARN("waypoint is missing");
+      //  ROS_WARN("waypoint is missing");
      }
      if(!velocity_set_) {
-       ROS_WARN("velocity is missing");
+      //  ROS_WARN("velocity is missing");
     }
     return outputZero();
   }
@@ -397,7 +397,7 @@ geometry_msgs::TwistStamped PurePursuit::go()
 
   if (!interpolate_flag)
   {
-    ROS_ERROR_STREAM("lost target! ");
+    // ROS_ERROR_STREAM("lost target! ");
     return outputZero();
   }
 

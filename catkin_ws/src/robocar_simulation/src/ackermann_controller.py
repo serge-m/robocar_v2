@@ -367,7 +367,8 @@ class _AckermannCtrlr(object):
         # Return the position of the specified link, relative to the right
         # rear wheel link.
 
-        print("waiting for link {}".format(link))
+        # print("waiting for link {}".format(link))
+        rospy.loginfo("waiting for link {}".format(link))
             
         while True:
             try:
