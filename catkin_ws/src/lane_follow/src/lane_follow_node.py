@@ -73,10 +73,9 @@ class LaneFollowNode:
                     zero = self.get_point_xyz(self.transformPoint((0,0,0), "camera_link_optical", "base_bottom_link"))
                     lbc_point = self.get_point_xyz(self.transformPoint(lbc_ray, "camera_link_optical", "base_bottom_link"))
                     rbc_point = self.get_point_xyz(self.transformPoint(rbc_ray, "camera_link_optical", "base_bottom_link"))
-                    # ground plane in the base_bottom_link frame
-                    xoy = (0, 0, 0)
-                    scale = 2*h/w
-                    point3, point4 = getUpperPoints(zero, lbc_point, rbc_point, xoy, scale)
+                    # get scale parameter from params server
+                    y_scale = rospy.get_param('~y_scale')
+                    point3, point4, x_scale = getUpperPoints(zero, lbc_point, rbc_point, y_scale)
                     # transform points 3 and 4 to camera_optical_link frame
                     luc_point = self.get_point_xyz(self.transformPoint(point3, "base_bottom_link", "camera_link_optical"))
                     ruc_point = self.get_point_xyz(self.transformPoint(point4, "base_bottom_link", "camera_link_optical"))
@@ -91,6 +90,7 @@ class LaneFollowNode:
                     # get matrix for perspective transformation
                     if (src and dst):
                         self.lane_follower.image_proc.get_transform_matrix(src, dst)
+                        self.lane_follower.image_proc.setScale((x_scale/w, y_scale/h))
                         self.hasTransformMatrix = True
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                     continue

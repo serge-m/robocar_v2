@@ -13,27 +13,25 @@ from sympy import Point3D, Line3D, Plane
 # lbc - ray which goes from center and left bottom corner of the image
 # rbc - ray which goes from center and right bottom corner of the image
 # xoy - any point which lay on the ground
-# scale - scale factor, equals to x*h/w, 
-#         where h and w are image height and width;
-#         x - how big is the squeeze of the image
-def getUpperPoints(zero, lbc, rbc, xoy, scale):
+# y_scale - scale factor, meters per image height
+def getUpperPoints(zero, lbc, rbc, y_scale=2, xoy=(0, 0, 0)):
     # make two lines from camera center
     lbc_line = Line3D(Point3D(zero), Point3D(lbc))
     rbc_line = Line3D(Point3D(zero), Point3D(rbc))
     # ground plane with lanes
     xy_plane = Plane(Point3D(xoy), normal_vector=(0, 0, 1))
-    # bottom points in the base_link frame
+    # bottom points in the base_bottom_link frame
     # are intersection points of lines and ground plane
     point1 = xy_plane.intersection(lbc_line)[0]
     point2 = xy_plane.intersection(rbc_line)[0]
     # translate factor in meters
     # depends on h*w of the image
     # and scale factor
-    t = float(point1.distance(point2))*scale
+    x_scale = float(point1.distance(point2))
     # upper points in the base_link frame
-    point3 = point1.translate(t)
-    point4 = point2.translate(t)
-    return point3, point4
+    point3 = point1.translate(y_scale)
+    point4 = point2.translate(y_scale)
+    return point3, point4, x_scale
 
 # class for processing images:
 # - top-view perspective transformation
@@ -64,6 +62,11 @@ class ImageProcessor:
         self.margin = margin
         # Set minimum number of pixels found to recenter window
         self.minpix = minpix
+        # (x_scale, y_scale) - scale factor in m per pixel
+        self.scale = None
+
+    def setScale(self, scale):
+        self.scale = scale
 
     def get_transform_matrix(self, src, dst):
         self.transformMatrix = cv2.getPerspectiveTransform(np.float32(src), np.float32(dst)) 
@@ -111,7 +114,7 @@ class ImageProcessor:
         if (np.count_nonzero(self.left_fit) == np.count_nonzero(self.right_fit) == 0):
             return np.array([[1, 0, 0]])
         
-        ploty, left_fitx, right_fitx = self.get_xy(math.ceil(self.shape[0]/10)+1)
+        ploty, left_fitx, right_fitx = self.get_xy(10)
         
         middle_fitx = (left_fitx + right_fitx) / 2
         # print(middle_fitx)
@@ -119,12 +122,13 @@ class ImageProcessor:
         # print(center_array)
         # substract img.width/2 to find deviation from center line
         # center_array[:, 0]-= int(self.shape[1] / 2)
-        middle_fitx-= int(self.shape[1] / 2)
+        middle_fitx -= int(self.shape[1] / 2)
         # print(center_array)
-        # divide by scaling parameters in x and y directions
+        # multiple by scaling parameters in x and y directions
         # to find coodrinates in required units and required sign
         # center_array[:, 0]/= -1
-        middle_fitx/= -1
+        middle_fitx *= -self.scale[0]
+        ploty *= self.scale[1]
         # print(center_array)
         # center_array[:,[0, 1]] = center_array[:,[1, 0]]
         center_array = np.column_stack((ploty, np.flip(middle_fitx, 0), np.zeros_like(ploty)))        

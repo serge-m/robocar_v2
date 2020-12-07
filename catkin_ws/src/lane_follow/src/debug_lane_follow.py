@@ -21,6 +21,10 @@ def main(args):
     src = np.float32([[387, 525],[894, 525],[w, h],[0, h]])
     dst = np.float32([[0, 0],[w, 0],[w, h],[0, h]])
     image_proc.get_transform_matrix(src, dst)
+    x_scale = 1.7
+    y_scale = 2.
+    print(y_scale/h)
+    image_proc.setScale((x_scale/w, y_scale/h))
     birds_image = image_proc.warp_perspective(treshold_image)
     cv2.imwrite(os.path.join(test_dir_path, 'birds_image.jpg'), birds_image)
     

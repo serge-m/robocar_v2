@@ -1,7 +1,7 @@
 #!/usr/bin/env python  
 
 # Node that publishes transformations 
-# between 'world' and 'base_link' frames in /tf
+# between 'world' and 'base_bottom_link' frames in /tf
 import rospy
 import tf
 
@@ -17,7 +17,6 @@ def tf_pub_cb(msg):
 
     odom_trans.transform.translation.x = msg.pose.pose.position.x
     odom_trans.transform.translation.y = msg.pose.pose.position.y
-    # TODO make this dependant from urdf file with car description
     odom_trans.transform.translation.z = 0
     
     odom_trans.transform.rotation = msg.pose.pose.orientation
