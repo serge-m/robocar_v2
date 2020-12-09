@@ -72,10 +72,15 @@
   <arg name="velocity" default="0.5"/>
   <!-- how many meters per image height -->
   <arg name="y_scale" default="2.0"/>
+  <!-- tf frames for transforming points -->
+  <arg name="base_frame" default="base_bottom_link"/>
+  <arg name="camera_opt_frame" default="camera_link_optical"/>
   <node type="lane_follow_node" pkg="lane_follow" name="lane_follow_node" output="screen">
     <param name="camera_params" value="$(arg camera_params)"/>
     <param name="velocity" value="$(arg velocity)"/>
     <param name="y_scale" value="$(arg y_scale)"/>
+    <param name="base_frame" value="$(arg base_frame)"/>
+    <param name="camera_opt_frame" value="$(arg camera_opt_frame)"/>
   </node>
 
 </launch>
