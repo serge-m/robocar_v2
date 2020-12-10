@@ -75,19 +75,20 @@ class ImageProcessor:
     def warp_perspective(self, img):
         h, w = img.shape[0], img.shape[1]
         if (self.transformMatrix is None):
-            print("src and dst points for tranformation should be defined")
+            print("before warp call get_transform_matrix()")
         else:
             self.birds_image = cv2.warpPerspective(np.copy(img), self.transformMatrix, (w, h))
         return self.birds_image
 
     # Gradient and color tresholds
-    def treshold_binary(self, image, s_thresh=(200, 255), sx_thresh=(20, 90)):
+    def treshold_binary(self, image, s_thresh=(100, 255), sx_thresh=(20, 100)):
         # Convert to HLS color space and separate the V channel
         hls = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
         l_channel = hls[:,:,1]
         s_channel = hls[:,:,2]
+        
         # Sobel x
-        sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0, ksize=7) # Take the derivative in x
+        sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0) # Take the derivative in x
         abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
         scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx)) if (np.max(abs_sobelx)) else np.uint8(255*abs_sobelx)
         
@@ -96,6 +97,9 @@ class ImageProcessor:
         sxbinary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
         
         # Threshold color channel
+        # in simulation h and s channels are zeros
+        if (np.max(s_channel) == 0):
+            s_channel = l_channel
         s_binary = np.zeros_like(s_channel)
         s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 1
         

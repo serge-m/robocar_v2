@@ -3,13 +3,12 @@ import os
 import cv2
 import math
 import numpy as np
-# from lane_follower import LaneFollower
 from img_helpers import ImageProcessor
 from lane_follower import LaneFollower
 
 def main(args):
     test_dir_path = os.path.join(os.path.split(os.path.dirname(__file__))[0], 'test')
-    fname = os.path.join(test_dir_path, '1.jpg')
+    fname = os.path.join(test_dir_path, '0.jpg')
     image_np = cv2.imread(fname)  
     h, w = image_np.shape[0], image_np.shape[1] 
     image_proc = ImageProcessor()
@@ -23,7 +22,6 @@ def main(args):
     image_proc.get_transform_matrix(src, dst)
     x_scale = 1.7
     y_scale = 2.
-    print(y_scale/h)
     image_proc.setScale((x_scale/w, y_scale/h))
     birds_image = image_proc.warp_perspective(treshold_image)
     cv2.imwrite(os.path.join(test_dir_path, 'birds_image.jpg'), birds_image)
