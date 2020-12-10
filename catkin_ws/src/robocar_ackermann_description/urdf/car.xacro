@@ -335,7 +335,8 @@ limitations under the License.
         <cameraName>camera</cameraName>
         <imageTopicName>color/image_raw</imageTopicName>
         <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
-        <frameName>camera</frameName>
+        <!-- camera frame with Z forward -->
+        <frameName>camera_link_optical</frameName>
         <!-- 286. TODO camera matrix as in file, two numbers left-->
         <focalLength>944.023585</focalLength>
         <CxPrime>641.408166</CxPrime>
@@ -372,7 +373,7 @@ limitations under the License.
     </collision>
 
     <visual name='camera_visual'>
-      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <box size="0.05 0.05 0.05"/>
       </geometry>
@@ -383,10 +384,32 @@ limitations under the License.
     <origin xyz="0.2 0 ${0.36}" rpy="0 0 0"/>
     <child link="camera"/>
     <parent link="chassis"/>
-    <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
+
+  <!-- generate an optical frame 
+      http://www.ros.org/reps/rep-0103.html#suffix-frames
+      so that ros and opencv can operate on the camera frame correctly 
+      -->
+  <joint name="camera_optical_joint" type="fixed">   
+    <origin xyz="0 0 0" rpy="${-degrees_90} 0 ${-degrees_90}"/>
+    <parent link="camera"/>
+    <child link="camera_link_optical"/>
+  </joint>
+
+  <link name="camera_link_optical">
+  </link>
+
+
   <!-- CAMERA END -->
 
+  <!-- projection of base_link to the ground -->
+  <link name="base_bottom_link">    
+  </link>
+  <joint type="fixed" name="base_to_bottom_joint">
+    <origin xyz="0 0 ${(chassis_height + wheel_travel + tire_dia) / 2}" rpy="0 0 0"/>
+    <child link="base_link"/>
+    <parent link="base_bottom_link"/>
+  </joint>
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
@@ -397,7 +420,7 @@ limitations under the License.
       <bodyName>base_link</bodyName>
       <topicName>robocar/odometry</topicName>
       <gaussianNoise>0.01</gaussianNoise>
-      <frameName>world</frameName>
+      <frameName>base_link</frameName>
       <xyzOffsets>0 0 0</xyzOffsets>
       <rpyOffsets>0 0 0</rpyOffsets>
     </plugin>

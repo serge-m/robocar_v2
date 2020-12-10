@@ -16,7 +16,7 @@
   <!-- vehicle pose -->
   <arg name="x" default="0"/>
   <arg name="y" default="0"/>
-  <arg name="z" default="0.095"/>
+  <arg name="z" default="0.0"/>
   <arg name="roll" default="0.0"/>
   <arg name="pitch" default="0.0"/>
   <arg name="yaw" default="0.0"/>
@@ -68,11 +68,19 @@
   </node>
 
   <!-- publish new waypoints for following the lane -->
-  <arg name="camera_params" default="$(find robocar_config)/camera_calibration.yaml"/>
+  <arg name="camera_params" default="$(find robocar_simulation)/config/sim_camera_calibration.yaml"/>
   <arg name="velocity" default="0.5"/>
+  <!-- how many meters per image height -->
+  <arg name="y_scale" default="2.0"/>
+  <!-- tf frames for transforming points -->
+  <arg name="base_frame" default="base_bottom_link"/>
+  <arg name="camera_opt_frame" default="camera_link_optical"/>
   <node type="lane_follow_node" pkg="lane_follow" name="lane_follow_node" output="screen">
     <param name="camera_params" value="$(arg camera_params)"/>
     <param name="velocity" value="$(arg velocity)"/>
+    <param name="y_scale" value="$(arg y_scale)"/>
+    <param name="base_frame" value="$(arg base_frame)"/>
+    <param name="camera_opt_frame" value="$(arg camera_opt_frame)"/>
   </node>
 
 </launch>

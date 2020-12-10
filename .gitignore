@@ -155,3 +155,27 @@ catkin_ws/src/ackermann_msgs/msg/AckermannDriveStamped.msg
 
 cmake-build-debug
 cmake-build-release
+catkin_ws/src/camera_info_manager_py/.gitignore
+catkin_ws/src/camera_info_manager_py/camera_info_manager.rst
+catkin_ws/src/camera_info_manager_py/CHANGELOG.rst
+catkin_ws/src/camera_info_manager_py/CMakeLists.txt
+catkin_ws/src/camera_info_manager_py/conf.py
+catkin_ws/src/camera_info_manager_py/index.rst
+catkin_ws/src/camera_info_manager_py/package.xml
+catkin_ws/src/camera_info_manager_py/README.rst
+catkin_ws/src/camera_info_manager_py/rosdoc.yaml
+catkin_ws/src/camera_info_manager_py/setup.py
+catkin_ws/src/camera_info_manager_py/src/camera_info_manager/__init__.py
+catkin_ws/src/camera_info_manager_py/src/camera_info_manager/camera_info_manager.py
+catkin_ws/src/camera_info_manager_py/src/camera_info_manager/zoom_camera_info_manager.py
+catkin_ws/src/camera_info_manager_py/tests/empty.yaml
+catkin_ws/src/camera_info_manager_py/tests/generate_camera_info.cpp
+catkin_ws/src/camera_info_manager_py/tests/generate_camera_info.py
+catkin_ws/src/camera_info_manager_py/tests/load_cpp_camera_info.test
+catkin_ws/src/camera_info_manager_py/tests/service_test.py
+catkin_ws/src/camera_info_manager_py/tests/test_calibration_zoom_1.yaml
+catkin_ws/src/camera_info_manager_py/tests/test_calibration_zoom_9999.yaml
+catkin_ws/src/camera_info_manager_py/tests/test_calibration.yaml
+catkin_ws/src/camera_info_manager_py/tests/test_camera_info_manager.py
+catkin_ws/src/camera_info_manager_py/tests/test_load_cpp_camera_info.py
+catkin_ws/src/camera_info_manager_py/tests/unit_test.test
