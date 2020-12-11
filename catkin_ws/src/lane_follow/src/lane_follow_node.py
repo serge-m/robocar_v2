@@ -25,6 +25,7 @@ class LaneFollowNode:
         self.camera_model = PinholeCameraModel()
         self.bridge = CvBridge()
         self.velocity = rospy.get_param('~velocity')
+        self.x_translate = 0
         self.cameraInfoSet = False
         self.hasTransformMatrix = False
         self.canTransformImg = False
@@ -74,6 +75,7 @@ class LaneFollowNode:
                     # get scale parameter from params server
                     y_scale = rospy.get_param('~y_scale')
                     point3, point4, x_scale = getUpperPoints(zero, lbc_point, rbc_point, y_scale)
+                    self.x_translate = point3[0] - y_scale
                     # transform points 3 and 4 to camera_optical_link frame
                     luc_point = self.get_point_xyz(self.transformPoint(point3, base_bottom_link, camera_link_optical))
                     ruc_point = self.get_point_xyz(self.transformPoint(point4, base_bottom_link, camera_link_optical))
@@ -111,7 +113,7 @@ class LaneFollowNode:
         for i in range(len(waypoints)):
             new_point = Waypoint()
             # apply transformation to a pose between 'base_bottom_link' and 'world' frames            
-            new_point.pose = self.transformPoint(waypoints[i], base_bottom_link, "world")
+            new_point.pose = self.transformPoint(waypoints[i], base_bottom_link, "world", self.x_translate)
             new_point.twist.twist.linear.x = float(self.velocity)
             msg.append(new_point) 
 
@@ -123,10 +125,10 @@ class LaneFollowNode:
 
         return lane
 
-    def transformPoint(self, point, source_frame, dest_frame):
+    def transformPoint(self, point, source_frame, dest_frame, translate=0):
         # make geometry_msgs/PoseStamped Message
         p = PoseStamped()
-        p.pose.position.x = point[0]
+        p.pose.position.x = point[0] + translate
         p.pose.position.y = point[1]
         p.pose.position.z = point[2]
         q = tf.transformations.quaternion_from_euler(0., 0., 0)

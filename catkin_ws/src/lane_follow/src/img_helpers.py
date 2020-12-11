@@ -81,12 +81,12 @@ class ImageProcessor:
         return self.birds_image
 
     # Gradient and color tresholds
-    def treshold_binary(self, image, s_thresh=(100, 255), sx_thresh=(20, 100)):
+    def treshold_binary(self, image, s_thresh=(200, 255), sx_thresh=(20, 100)):
         # Convert to HLS color space and separate the V channel
         hls = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
         l_channel = hls[:,:,1]
         s_channel = hls[:,:,2]
-        
+         
         # Sobel x
         sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0) # Take the derivative in x
         abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
