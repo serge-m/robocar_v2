@@ -39,7 +39,7 @@ def getUpperPoints(zero, lbc, rbc, y_scale=2, xoy=(0, 0, 0)):
 # - finding lane lines and fitting polynomials
 # - getting waypoints from middle line in the base_link frame in meters
 class ImageProcessor:
-    def __init__(self, nwindows=20, margin=50, minpix=50):
+    def __init__(self, nwindows=30, margin=100, minpix=50):
         # transformation matrix for 
         # (un)wraping images to top-view projection
         self.transformMatrix = None
@@ -77,7 +77,7 @@ class ImageProcessor:
         if (self.transformMatrix is None):
             print("before warp call get_transform_matrix()")
         else:
-            self.birds_image = cv2.warpPerspective(np.copy(img), self.transformMatrix, (w, h))
+            self.birds_image = cv2.warpPerspective(np.copy(img), self.transformMatrix, (w, h))            
         return self.birds_image
 
     # Gradient and color tresholds
@@ -190,38 +190,56 @@ class ImageProcessor:
             left_lane_inds = []
             right_lane_inds = []
 
+            # stop flag if there are no lane pixels
+            left_stop = False
+            right_stop = False
+
             # Step through the windows one by one
             for window in range(self.nwindows):
                 # Identify window boundaries in x and y (and right and left)
                 win_y_low = treshold_warped.shape[0] - (window+1)*window_height
                 win_y_high = treshold_warped.shape[0] - window*window_height
-                # Find the four below boundaries of the window 
-                win_xleft_low = leftx_current - self.margin  # Update this
-                win_xleft_high = leftx_current + self.margin  # Update this
-                win_xright_low = rightx_current - self.margin  # Update this
-                win_xright_high = rightx_current + self.margin  # Update this       
                 
-                # draw window rectangles
-                if draw:
-                    cv2.rectangle(self.poly_img,(win_xleft_low,win_y_low),
-                    (win_xleft_high,win_y_high),(0,255,0), 2) 
-                    cv2.rectangle(self.poly_img,(win_xright_low,win_y_low),
-                    (win_xright_high,win_y_high),(0,255,0), 2)  
+                if not left_stop:
+                    # Find the four below boundaries of the window 
+                    win_xleft_low = leftx_current - self.margin 
+                    win_xleft_high = leftx_current + self.margin                     
+                    # draw window rectangles
+                    if draw:
+                        cv2.rectangle(self.poly_img,(win_xleft_low,win_y_low),
+                        (win_xleft_high,win_y_high),(0,255,0), 2) 
+                    # Identify the nonzero pixels in x and y within the window 
+                    good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
+                    (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
+                    # Append these indices to the lists
+                    left_lane_inds.append(good_left_inds)
+                    # If you found > minpix pixels, recenter next window on their mean position 
+                    # or stop windows
+                    if len(good_left_inds) > self.minpix:
+                        leftx_current=np.int(np.mean(nonzerox[good_left_inds]))
+                    else:
+                        left_stop = True
 
-                # Identify the nonzero pixels in x and y within the window 
-                good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
-                (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
-                good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
-                (nonzerox >= win_xright_low) &  (nonzerox < win_xright_high)).nonzero()[0]
-                # Append these indices to the lists
-                left_lane_inds.append(good_left_inds)
-                right_lane_inds.append(good_right_inds)
-                # If you found > minpix pixels, recenter next window 
-                # (`right` or `leftx_current`) on their mean position 
-                if len(good_left_inds) > self.minpix:
-                    leftx_current=np.int(np.mean(nonzerox[good_left_inds]))
-                if (good_right_inds.shape[0] > self.minpix):
-                    rightx_current=np.int(np.mean(nonzerox[good_right_inds]))
+                if not right_stop:
+                    # Find the four below boundaries of the window 
+                    win_xright_low = rightx_current - self.margin 
+                    win_xright_high = rightx_current + self.margin                      
+                    # draw window rectangles
+                    if draw:
+                        cv2.rectangle(self.poly_img,(win_xright_low,win_y_low),
+                        (win_xright_high,win_y_high),(0,255,0), 2)  
+
+                    # Identify the nonzero pixels in x and y within the window                     
+                    good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
+                    (nonzerox >= win_xright_low) &  (nonzerox < win_xright_high)).nonzero()[0]
+                    # Append these indices to the lists
+                    right_lane_inds.append(good_right_inds)
+                    # If you found > minpix pixels, recenter next window on their mean position 
+                    # or stop windows
+                    if (good_right_inds.shape[0] > self.minpix):
+                        rightx_current=np.int(np.mean(nonzerox[good_right_inds]))
+                    else:
+                        right_stop = True
 
             # Concatenate the arrays of indices (previously was a list of lists of pixels)
             try:
